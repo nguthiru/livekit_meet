@@ -43,7 +43,8 @@ export function VideoConferenceClientImpl(props: {
         },
         screenShareSimulcastLayers: [],
         red: !e2eeEnabled,
-        videoCodec: props.codec ?? 'vp9',
+        // VP8 avoids the browser-specific VP9 SVC screen-share path.
+        videoCodec: props.codec ?? 'vp8',
       },
       adaptiveStream: { pixelDensity: 'screen' },
       dynacast: true,

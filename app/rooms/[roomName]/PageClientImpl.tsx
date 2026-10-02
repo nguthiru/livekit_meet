@@ -111,7 +111,9 @@ function VideoConferenceComponent(props: {
   const [e2eeSetupComplete, setE2eeSetupComplete] = React.useState(false);
 
   const roomOptions = React.useMemo((): RoomOptions => {
-    let videoCodec: VideoCodec | undefined = props.options.codec ? props.options.codec : 'vp9';
+    // VP8 is the most interoperable baseline for browser screen sharing.
+    // Callers can still opt into another codec with the codec query option.
+    let videoCodec: VideoCodec | undefined = props.options.codec ? props.options.codec : 'vp8';
     if (e2eeEnabled && (videoCodec === 'av1' || videoCodec === 'vp9')) {
       videoCodec = undefined;
     }
