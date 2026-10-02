@@ -23,6 +23,7 @@ import {
   DeviceUnsupportedError,
   RoomConnectOptions,
   RoomEvent,
+  Track,
   TrackPublishDefaults,
   VideoCaptureOptions,
 } from 'livekit-client';
@@ -110,7 +111,9 @@ function VideoConferenceComponent(props: {
   const [e2eeSetupComplete, setE2eeSetupComplete] = React.useState(false);
 
   const roomOptions = React.useMemo((): RoomOptions => {
-    let videoCodec: VideoCodec | undefined = props.options.codec ? props.options.codec : 'vp9';
+    // VP8 is the most interoperable baseline for browser screen sharing.
+    // Callers can still opt into another codec with the codec query option.
+    let videoCodec: VideoCodec | undefined = props.options.codec ? props.options.codec : 'vp8';
     if (e2eeEnabled && (videoCodec === 'av1' || videoCodec === 'vp9')) {
       videoCodec = undefined;
     }
@@ -123,6 +126,14 @@ function VideoConferenceComponent(props: {
       videoSimulcastLayers: props.options.hq
         ? [VideoPresets.h1080, VideoPresets.h720]
         : [VideoPresets.h540, VideoPresets.h216],
+      // Screen shares need a single, sharp full-resolution stream. The
+      // generic camera layers otherwise allow the bandwidth estimator to
+      // select a blurry half-resolution layer when text is on screen.
+      screenShareEncoding: {
+        maxBitrate: 4_500_000,
+        maxFramerate: 15,
+      },
+      screenShareSimulcastLayers: [],
       red: !e2eeEnabled,
       videoCodec,
     };
@@ -170,9 +181,16 @@ function VideoConferenceComponent(props: {
   }, []);
 
   React.useEffect(() => {
+    const handleLocalTrackPublished = (publication: any) => {
+      if (publication.source === Track.Source.ScreenShare && publication.track) {
+        publication.track.mediaStreamTrack.contentHint = 'detail';
+      }
+    };
+
     room.on(RoomEvent.Disconnected, handleOnLeave);
     room.on(RoomEvent.EncryptionError, handleEncryptionError);
     room.on(RoomEvent.MediaDevicesError, handleError);
+    room.on(RoomEvent.LocalTrackPublished, handleLocalTrackPublished);
 
     if (e2eeSetupComplete) {
       room
@@ -199,6 +217,7 @@ function VideoConferenceComponent(props: {
       room.off(RoomEvent.Disconnected, handleOnLeave);
       room.off(RoomEvent.EncryptionError, handleEncryptionError);
       room.off(RoomEvent.MediaDevicesError, handleError);
+      room.off(RoomEvent.LocalTrackPublished, handleLocalTrackPublished);
     };
   }, [e2eeSetupComplete, room, props.connectionDetails, props.userChoices]);
 
