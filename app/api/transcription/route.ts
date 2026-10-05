@@ -43,3 +43,35 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: message }, { status: 502 });
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  try {
+    if (!LIVEKIT_API_KEY || !LIVEKIT_API_SECRET || !LIVEKIT_API_URL) {
+      return NextResponse.json({ error: 'LiveKit dispatch is not configured' }, { status: 500 });
+    }
+
+    const body = await request.json();
+    const roomName = typeof body.roomName === 'string' ? body.roomName.trim() : '';
+    if (!roomName) {
+      return NextResponse.json({ error: 'roomName is required' }, { status: 400 });
+    }
+
+    const dispatchClient = new AgentDispatchClient(
+      getHttpUrl(LIVEKIT_API_URL),
+      LIVEKIT_API_KEY,
+      LIVEKIT_API_SECRET,
+    );
+    const dispatches = await dispatchClient.listDispatch(roomName);
+    await Promise.all(
+      dispatches
+        .filter((dispatch) => dispatch.agentName === TRANSCRIPTION_AGENT_NAME)
+        .map((dispatch) => dispatchClient.deleteDispatch(dispatch.id, roomName)),
+    );
+
+    return NextResponse.json({ stopped: true });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : 'Unable to stop transcription';
+    return NextResponse.json({ error: message }, { status: 502 });
+  }
+}
