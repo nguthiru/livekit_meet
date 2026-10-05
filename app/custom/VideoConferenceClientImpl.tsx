@@ -7,6 +7,8 @@ import {
   Room,
   RoomConnectOptions,
   RoomOptions,
+  RoomEvent,
+  Track,
   VideoPresets,
   type VideoCodec,
 } from 'livekit-client';
@@ -33,8 +35,16 @@ export function VideoConferenceClientImpl(props: {
     return {
       publishDefaults: {
         videoSimulcastLayers: [VideoPresets.h540, VideoPresets.h216],
+        // Keep screen sharing at one full-resolution layer so shared text
+        // does not become soft when adaptive streaming changes camera layers.
+        screenShareEncoding: {
+          maxBitrate: 4_500_000,
+          maxFramerate: 15,
+        },
+        screenShareSimulcastLayers: [],
         red: !e2eeEnabled,
-        videoCodec: props.codec,
+        // VP8 avoids the browser-specific VP9 SVC screen-share path.
+        videoCodec: props.codec ?? 'vp8',
       },
       adaptiveStream: { pixelDensity: 'screen' },
       dynacast: true,
@@ -69,6 +79,13 @@ export function VideoConferenceClientImpl(props: {
   }, [e2eeEnabled, e2eePassphrase, keyProvider, room, setE2eeSetupComplete]);
 
   useEffect(() => {
+    const handleLocalTrackPublished = (publication: any) => {
+      if (publication.source === Track.Source.ScreenShare && publication.track) {
+        publication.track.mediaStreamTrack.contentHint = 'detail';
+      }
+    };
+
+    room.on(RoomEvent.LocalTrackPublished, handleLocalTrackPublished);
     if (e2eeSetupComplete) {
       room.connect(props.liveKitUrl, props.token, connectOptions).catch((error) => {
         console.error(error);
@@ -77,6 +94,9 @@ export function VideoConferenceClientImpl(props: {
         console.error(error);
       });
     }
+    return () => {
+      room.off(RoomEvent.LocalTrackPublished, handleLocalTrackPublished);
+    };
   }, [room, props.liveKitUrl, props.token, connectOptions, e2eeSetupComplete]);
 
   useLowCPUOptimizer(room);
