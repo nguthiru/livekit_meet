@@ -2,15 +2,12 @@
 
 import { useRoomContext } from '@livekit/components-react';
 import { Participant, RoomEvent } from 'livekit-client';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const TRANSCRIPTION_AGENT_NAME = 'transcriber';
 
 function isTranscriptionAgent(participant: Participant): boolean {
-  return (
-    participant.name === TRANSCRIPTION_AGENT_NAME ||
-    participant.identity.startsWith(`agent-${TRANSCRIPTION_AGENT_NAME}`)
-  );
+  return participant.isAgent && participant.attributes['lk.agent.name'] === TRANSCRIPTION_AGENT_NAME;
 }
 
 export function TranscriptionButton() {
@@ -19,22 +16,24 @@ export function TranscriptionButton() {
   const [agentJoined, setAgentJoined] = useState(false);
   const [error, setError] = useState<string | undefined>();
 
-  const remoteParticipants = useMemo(() => [...room.remoteParticipants.values()], [room]);
-
   useEffect(() => {
-    setAgentJoined(remoteParticipants.some(isTranscriptionAgent));
+    const updateAgentState = () => {
+      const joined = [...room.remoteParticipants.values()].some(isTranscriptionAgent);
+      setAgentJoined(joined);
+      if (joined) setDispatching(false);
+    };
 
-    const handleParticipantConnected = (participant: Participant) => {
-      if (isTranscriptionAgent(participant)) {
-        setAgentJoined(true);
-        setDispatching(false);
-      }
-    };
-    room.on(RoomEvent.ParticipantConnected, handleParticipantConnected);
+    updateAgentState();
+    room.on(RoomEvent.ParticipantConnected, updateAgentState);
+    room.on(RoomEvent.ParticipantAttributesChanged, updateAgentState);
+    room.on(RoomEvent.ParticipantDisconnected, updateAgentState);
+
     return () => {
-      room.off(RoomEvent.ParticipantConnected, handleParticipantConnected);
+      room.off(RoomEvent.ParticipantConnected, updateAgentState);
+      room.off(RoomEvent.ParticipantAttributesChanged, updateAgentState);
+      room.off(RoomEvent.ParticipantDisconnected, updateAgentState);
     };
-  }, [remoteParticipants, room]);
+  }, [room]);
 
   async function requestTranscription() {
     setDispatching(true);
