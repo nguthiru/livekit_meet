@@ -2,7 +2,8 @@
 
 import { useRoomContext } from '@livekit/components-react';
 import { Participant, RoomEvent } from 'livekit-client';
-import { useEffect, useState } from 'react';
+import { RefObject, useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 const TRANSCRIPTION_AGENT_NAME = 'transcriber';
 
@@ -10,8 +11,13 @@ function isTranscriptionAgent(participant: Participant): boolean {
   return participant.isAgent && participant.attributes['lk.agent.name'] === TRANSCRIPTION_AGENT_NAME;
 }
 
-export function TranscriptionButton() {
+export function TranscriptionButton({
+  conferenceRef,
+}: {
+  conferenceRef: RefObject<HTMLDivElement | null>;
+}) {
   const room = useRoomContext();
+  const [controlBar, setControlBar] = useState<HTMLElement>();
   const [dispatching, setDispatching] = useState(false);
   const [agentJoined, setAgentJoined] = useState(false);
   const [error, setError] = useState<string | undefined>();
@@ -34,6 +40,10 @@ export function TranscriptionButton() {
       room.off(RoomEvent.ParticipantDisconnected, updateAgentState);
     };
   }, [room]);
+
+  useEffect(() => {
+    setControlBar(conferenceRef.current?.querySelector<HTMLElement>('.lk-control-bar') ?? undefined);
+  }, [conferenceRef]);
 
   async function requestTranscription() {
     setDispatching(true);
@@ -58,23 +68,19 @@ export function TranscriptionButton() {
 
   const label = agentJoined ? 'Transcribing' : dispatching ? 'Joining…' : 'Transcribe';
 
-  return (
-    <div style={{ position: 'absolute', top: '1rem', right: '1rem', zIndex: 20 }}>
-      <button
-        className="lk-button"
-        type="button"
-        onClick={requestTranscription}
-        disabled={dispatching || agentJoined}
-        aria-busy={dispatching}
-        title={error ?? 'Join the transcription agent to this call'}
-      >
-        {label}
-      </button>
-      {error && (
-        <div role="alert" style={{ maxWidth: '18rem', marginTop: '0.5rem', color: '#ffb4b4' }}>
-          {error}
-        </div>
-      )}
-    </div>
+  if (!controlBar) return null;
+
+  return createPortal(
+    <button
+      className="lk-button"
+      type="button"
+      onClick={requestTranscription}
+      disabled={dispatching || agentJoined}
+      aria-busy={dispatching}
+      title={error ?? 'Join the transcription agent to this call'}
+    >
+      {label}
+    </button>,
+    controlBar,
   );
 }
