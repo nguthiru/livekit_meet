@@ -19,6 +19,7 @@ export function TranscriptionButton({
   const room = useRoomContext();
   const [controlBar, setControlBar] = useState<HTMLElement>();
   const [dispatching, setDispatching] = useState(false);
+  const [stopping, setStopping] = useState(false);
   const [agentJoined, setAgentJoined] = useState(false);
   const [error, setError] = useState<string | undefined>();
 
@@ -27,6 +28,7 @@ export function TranscriptionButton({
       const joined = [...room.remoteParticipants.values()].some(isTranscriptionAgent);
       setAgentJoined(joined);
       if (joined) setDispatching(false);
+      if (!joined) setStopping(false);
     };
 
     updateAgentState();
@@ -46,27 +48,40 @@ export function TranscriptionButton({
   }, [conferenceRef]);
 
   async function requestTranscription() {
+    const stoppingTranscription = agentJoined || dispatching;
+    if (stoppingTranscription) setStopping(true);
     setDispatching(true);
     setError(undefined);
     try {
       const response = await fetch('/api/transcription', {
-        method: 'POST',
+        method: stoppingTranscription ? 'DELETE' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ roomName: room.name }),
       });
       const result = await response.json();
       if (!response.ok) {
-        throw new Error(result.error ?? 'Unable to start transcription');
+        throw new Error(
+          result.error ?? `Unable to ${stoppingTranscription ? 'stop' : 'start'} transcription`,
+        );
+      }
+      if (stoppingTranscription) {
+        setDispatching(false);
+        if (!agentJoined) setStopping(false);
       }
     } catch (requestError) {
       setDispatching(false);
+      setStopping(false);
       setError(
         requestError instanceof Error ? requestError.message : 'Unable to start transcription',
       );
     }
   }
 
-  const label = agentJoined ? 'Transcribing' : dispatching ? 'Joining…' : 'Transcribe';
+  const label = stopping
+    ? 'Stopping…'
+    : agentJoined || dispatching
+      ? 'Stop transcription'
+      : 'Transcribe';
 
   if (!controlBar) return null;
 
@@ -75,9 +90,9 @@ export function TranscriptionButton({
       className="lk-button"
       type="button"
       onClick={requestTranscription}
-      disabled={dispatching || agentJoined}
-      aria-busy={dispatching}
-      title={error ?? 'Join the transcription agent to this call'}
+      disabled={dispatching || stopping}
+      aria-busy={dispatching || stopping}
+      title={error ?? 'Start or stop the transcription agent for this call'}
     >
       {label}
     </button>,
