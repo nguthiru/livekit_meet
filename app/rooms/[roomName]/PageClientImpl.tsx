@@ -1,19 +1,19 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
+import { BrandedPreJoin } from '@/lib/BrandedPreJoin';
+import { Brand } from '@/lib/Brand';
+import { Icon } from '@/lib/Icons';
+import { MeetingHeader } from '@/lib/MeetingHeader';
+import { MeetingConference } from '@/lib/MeetingConference';
 import { decodePassphrase } from '@/lib/client-utils';
 import { DebugMode } from '@/lib/Debug';
 import { KeyboardShortcuts } from '@/lib/KeyboardShortcuts';
 import { RecordingIndicator } from '@/lib/RecordingIndicator';
 import { SettingsMenu } from '@/lib/SettingsMenu';
 import { ConnectionDetails } from '@/lib/types';
-import {
-  formatChatMessageLinks,
-  LocalUserChoices,
-  PreJoin,
-  RoomContext,
-  VideoConference,
-} from '@livekit/components-react';
+import { formatChatMessageLinks, LocalUserChoices, RoomContext } from '@livekit/components-react';
 import {
   ExternalE2EEKeyProvider,
   RoomOptions,
@@ -31,6 +31,7 @@ import { useRouter } from 'next/navigation';
 import { useSetupE2EE } from '@/lib/useSetupE2EE';
 import { useLowCPUOptimizer } from '@/lib/usePerfomanceOptimiser';
 import { TranscriptionButton } from './TranscriptionButton';
+import { MeetingReactions } from '@/lib/MeetingReactions';
 
 const CONN_DETAILS_ENDPOINT =
   process.env.NEXT_PUBLIC_CONN_DETAILS_ENDPOINT ?? '/api/connection-details';
@@ -53,33 +54,100 @@ export function PageClientImpl(props: {
       audioEnabled: true,
     };
   }, []);
+  const [joinError, setJoinError] = React.useState('');
+  const [joining, setJoining] = React.useState(false);
   const [connectionDetails, setConnectionDetails] = React.useState<ConnectionDetails | undefined>(
     undefined,
   );
 
-  const handlePreJoinSubmit = React.useCallback(async (values: LocalUserChoices) => {
-    setPreJoinChoices(values);
-    const url = new URL(CONN_DETAILS_ENDPOINT, window.location.origin);
-    url.searchParams.append('roomName', props.roomName);
-    url.searchParams.append('participantName', values.username);
-    if (props.region) {
-      url.searchParams.append('region', props.region);
-    }
-    const connectionDetailsResp = await fetch(url.toString());
-    const connectionDetailsData = await connectionDetailsResp.json();
-    setConnectionDetails(connectionDetailsData);
+  const handlePreJoinSubmit = React.useCallback(
+    async (values: LocalUserChoices) => {
+      setJoining(true);
+      setJoinError('');
+      try {
+        const url = new URL(CONN_DETAILS_ENDPOINT, window.location.origin);
+        url.searchParams.append('roomName', props.roomName);
+        url.searchParams.append('participantName', values.username);
+        if (props.region) url.searchParams.append('region', props.region);
+        const response = await fetch(url.toString());
+        if (!response.ok) throw new Error('Could not join the meeting. Please try again.');
+        const details: ConnectionDetails = await response.json();
+        setPreJoinChoices(values);
+        setConnectionDetails(details);
+      } catch (error) {
+        setJoinError(error instanceof Error ? error.message : 'Could not join the meeting.');
+      } finally {
+        setJoining(false);
+      }
+    },
+    [props.roomName, props.region],
+  );
+  const handlePreJoinError = React.useCallback((error: Error) => {
+    console.error(error);
+    setJoinError(
+      'Camera or microphone unavailable. Check your permissions, or join with them turned off.',
+    );
   }, []);
-  const handlePreJoinError = React.useCallback((e: any) => console.error(e), []);
 
   return (
     <main data-lk-theme="default" style={{ height: '100%' }}>
       {connectionDetails === undefined || preJoinChoices === undefined ? (
-        <div style={{ display: 'grid', placeItems: 'center', height: '100%' }}>
-          <PreJoin
-            defaults={preJoinDefaults}
-            onSubmit={handlePreJoinSubmit}
-            onError={handlePreJoinError}
-          />
+        <div className="prejoin-page">
+          <header className="prejoin-header">
+            <Brand />
+            <Link href="/" className="icon-button" aria-label="Back to lobby" title="Back to lobby">
+              <Icon name="back" />
+            </Link>
+          </header>
+          <section className="prejoin-workbench">
+            <div className="prejoin-intro">
+              <span className="section-eyebrow">YOUR NEXT CONVERSATION</span>
+              <h1>
+                A quick check.
+                <br />
+                Then, say hello.
+              </h1>
+              <p>
+                Make yourself comfortable. Check your camera and microphone before joining your
+                crew.
+              </p>
+              <div className="prejoin-room">
+                <Icon name="video" />
+                <span>
+                  <small>You’re joining</small>
+                  <strong>{props.roomName}</strong>
+                </span>
+              </div>
+              <div className="prejoin-tip">
+                <Icon name="shield" />
+                <span>
+                  Your camera and microphone are yours to control, before and during the call.
+                </span>
+              </div>
+            </div>
+            <div className="prejoin-preview">
+              <div className="preview-caption">
+                <span className="connection-dot connected" />
+                Your space, before you join
+              </div>
+              <div aria-busy={joining} className={joining ? 'prejoin-loading' : undefined}>
+                <BrandedPreJoin
+                  defaults={preJoinDefaults}
+                  onSubmit={handlePreJoinSubmit}
+                  onError={handlePreJoinError}
+                />
+              </div>
+              <p className="prejoin-caption">
+                {joining ? 'Connecting you to your crew…' : 'All set? Your crew is one click away.'}
+              </p>
+              {joinError && (
+                <p className="prejoin-error" role="alert">
+                  {joinError}
+                </p>
+              )}
+            </div>
+          </section>
+          <p className="prejoin-footer">Different places. Same adventure.</p>
         </div>
       ) : (
         <VideoConferenceComponent
@@ -245,15 +313,17 @@ function VideoConferenceComponent(props: {
   }, [lowPowerMode]);
 
   return (
-    <div className="lk-room-container">
+    <div className="lk-room-container yoonka-room">
       <RoomContext.Provider value={room}>
+        <MeetingHeader />
         <KeyboardShortcuts />
-        <div ref={conferenceRef} style={{ height: '100%' }}>
-          <VideoConference
+        <div ref={conferenceRef} className="meeting-conference">
+          <MeetingConference
             chatMessageFormatter={formatChatMessageLinks}
             SettingsComponent={SHOW_SETTINGS_MENU ? SettingsMenu : undefined}
           />
           <TranscriptionButton conferenceRef={conferenceRef} />
+          <MeetingReactions conferenceRef={conferenceRef} />
         </div>
         <DebugMode />
         <RecordingIndicator />

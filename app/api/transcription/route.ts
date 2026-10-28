@@ -11,6 +11,33 @@ function getHttpUrl(url: string): string {
   return url.replace(/^wss:/, 'https:').replace(/^ws:/, 'http:');
 }
 
+export async function GET(request: NextRequest) {
+  try {
+    if (!LIVEKIT_API_KEY || !LIVEKIT_API_SECRET || !LIVEKIT_API_URL) {
+      return NextResponse.json({ error: 'LiveKit dispatch is not configured' }, { status: 500 });
+    }
+    const roomName = request.nextUrl.searchParams.get('roomName')?.trim();
+    if (!roomName) {
+      return NextResponse.json({ error: 'roomName is required' }, { status: 400 });
+    }
+    const dispatchClient = new AgentDispatchClient(
+      getHttpUrl(LIVEKIT_API_URL),
+      LIVEKIT_API_KEY,
+      LIVEKIT_API_SECRET,
+    );
+    const dispatches = await dispatchClient.listDispatch(roomName);
+    return NextResponse.json(
+      { active: dispatches.some((dispatch) => dispatch.agentName === TRANSCRIPTION_AGENT_NAME) },
+      { headers: { 'Cache-Control': 'no-store' } },
+    );
+  } catch (error) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Unable to check transcription status' },
+      { status: 502 },
+    );
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     if (!LIVEKIT_API_KEY || !LIVEKIT_API_SECRET || !LIVEKIT_API_URL) {
@@ -28,9 +55,12 @@ export async function POST(request: NextRequest) {
       LIVEKIT_API_KEY,
       LIVEKIT_API_SECRET,
     );
-    const dispatch = await dispatchClient.createDispatch(roomName, TRANSCRIPTION_AGENT_NAME, {
-      metadata: JSON.stringify({ requestedBy: 'meet-frontend' }),
-    });
+    const dispatches = await dispatchClient.listDispatch(roomName);
+    const dispatch =
+      dispatches.find((entry) => entry.agentName === TRANSCRIPTION_AGENT_NAME) ??
+      (await dispatchClient.createDispatch(roomName, TRANSCRIPTION_AGENT_NAME, {
+        metadata: JSON.stringify({ requestedBy: 'meet-frontend' }),
+      }));
 
     return NextResponse.json({
       dispatchId: dispatch.id,
@@ -70,8 +100,7 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({ stopped: true });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : 'Unable to stop transcription';
+    const message = error instanceof Error ? error.message : 'Unable to stop transcription';
     return NextResponse.json({ error: message }, { status: 502 });
   }
 }
