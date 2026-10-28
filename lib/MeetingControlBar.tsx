@@ -6,6 +6,13 @@ import {
   MediaDeviceMenu,
   DisconnectButton,
   TrackToggle,
+  MicIcon,
+  MicDisabledIcon,
+  CameraIcon,
+  CameraDisabledIcon,
+  ScreenShareIcon,
+  ScreenShareStopIcon,
+  useLocalParticipant,
   ChatIcon,
   GearIcon,
   LeaveIcon,
@@ -39,6 +46,7 @@ export function MeetingControlBar({
   ...props
 }: ControlBarProps) {
   const layout = useLayoutContext();
+  const { isMicrophoneEnabled, isCameraEnabled } = useLocalParticipant();
   const visibleControls = { leave: true, ...controls };
 
   const localPermissions = useLocalParticipantPermissions();
@@ -112,10 +120,16 @@ export function MeetingControlBar({
             source={Track.Source.Microphone}
             aria-label="Toggle microphone"
             title="Toggle microphone"
-            showIcon={showIcon}
+            showIcon={false}
             onChange={microphoneOnChange}
             onDeviceError={(error) => onDeviceError?.({ source: Track.Source.Microphone, error })}
           >
+            {showIcon &&
+              (isMicrophoneEnabled ? (
+                <MicIcon viewBox="0 0 16 16" />
+              ) : (
+                <MicDisabledIcon viewBox="0 0 16 16" />
+              ))}
             {showText && 'Microphone'}
           </TrackToggle>
           <div className="lk-button-group-menu">
@@ -136,10 +150,16 @@ export function MeetingControlBar({
             source={Track.Source.Camera}
             aria-label="Toggle camera"
             title="Toggle camera"
-            showIcon={showIcon}
+            showIcon={false}
             onChange={cameraOnChange}
             onDeviceError={(error) => onDeviceError?.({ source: Track.Source.Camera, error })}
           >
+            {showIcon &&
+              (isCameraEnabled ? (
+                <CameraIcon viewBox="0 0 16 16" />
+              ) : (
+                <CameraDisabledIcon viewBox="0 0 16 16" />
+              ))}
             {showText && 'Camera'}
           </TrackToggle>
           <div className="lk-button-group-menu">
@@ -160,16 +180,22 @@ export function MeetingControlBar({
           aria-label={isScreenShareEnabled ? 'Stop screen sharing' : 'Share screen'}
           title={isScreenShareEnabled ? 'Stop screen sharing' : 'Share screen'}
           captureOptions={{ audio: true, selfBrowserSurface: 'include' }}
-          showIcon={showIcon}
+          showIcon={false}
           onChange={onScreenShareChange}
           onDeviceError={(error) => onDeviceError?.({ source: Track.Source.ScreenShare, error })}
         >
+          {showIcon &&
+            (isScreenShareEnabled ? (
+              <ScreenShareStopIcon viewBox="0 0 20 16" />
+            ) : (
+              <ScreenShareIcon viewBox="0 0 20 16" />
+            ))}
           {showText && (isScreenShareEnabled ? 'Stop screen share' : 'Share screen')}
         </TrackToggle>
       )}
       {visibleControls.chat && (
         <ChatToggle aria-label="Toggle chat" title="Chat">
-          {showIcon && <ChatIcon />}
+          {showIcon && <ChatIcon viewBox="0 0 16 18" />}
           {showText && 'Chat'}
         </ChatToggle>
       )}
@@ -182,13 +208,13 @@ export function MeetingControlBar({
           aria-pressed={layout.widget.state?.showSettings ?? false}
           onClick={() => layout.widget.dispatch?.({ msg: 'toggle_settings' })}
         >
-          {showIcon && <GearIcon />}
+          {showIcon && <GearIcon viewBox="0 0 16 16" />}
           {showText && 'Settings'}
         </button>
       )}
       {visibleControls.leave && (
         <DisconnectButton aria-label="Leave meeting" title="Leave meeting">
-          {showIcon && <LeaveIcon />}
+          {showIcon && <LeaveIcon viewBox="0 0 16 16" />}
           {showText && 'Leave'}
         </DisconnectButton>
       )}
