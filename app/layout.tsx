@@ -19,7 +19,14 @@ export const metadata: Metadata = {
     siteName: 'Yoonka Meet',
     type: 'website',
   },
-  icons: { icon: '/brand/favicon.svg', apple: '/brand/yoonka-mark.png' },
+  icons: {
+    icon: [
+      { url: '/favicon.ico?v=yoonka', type: 'image/x-icon', sizes: '16x16 32x32 64x64 128x128' },
+      { url: '/brand/favicon-32x32.png', type: 'image/png', sizes: '32x32' },
+      { url: '/brand/favicon-128x128.png', type: 'image/png', sizes: '128x128' },
+    ],
+    apple: { url: '/brand/apple-touch-icon.png', sizes: '180x180' },
+  },
 };
 
 export const viewport: Viewport = { themeColor: '#fffef2' };
