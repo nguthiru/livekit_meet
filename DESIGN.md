@@ -5,6 +5,7 @@ Reference: https://www.yoonka.com/ (observed October 28, 2026).
 
 - Warm ivory #fffef2, white surfaces, deep green ink, copper accents drawn from the airship artwork. Blue focus rings preserve Yoonka's primary brand color.
 - Poppins for interface and display; Nikodecs only for the Yoonka wordmark. Fonts served locally.
+- Desktop lobby allocates 65% of the hero to meeting actions and 35% to decoration, with a wider form and a smaller secondary caption. Mobile stacks actions before artwork.
 - Lobby: split meeting workbench and illustrated airship scene. Pre-join: a focused device-check workbench. Conference: quiet functional surfaces, a branded header and compact icon dock.
 - Use the provided Yoonka mark and airship artwork. Keep illustrations outside the active meeting area.
 - Rounded fields, pill navigation, thin warm borders, generous spacing. No marketing claims or invented meeting data.

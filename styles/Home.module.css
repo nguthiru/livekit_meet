@@ -28,11 +28,12 @@
   max-width: 1440px;
   margin: 32px auto 32px;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: clamp(36px, 6vw, 100px);
+  grid-template-columns: minmax(0, 13fr) minmax(0, 7fr);
+  gap: clamp(24px, 4vw, 64px);
   align-items: stretch;
 }
 .heroContent {
+  min-width: 0;
   padding: 16px 0 8px;
 }
 .eyebrow {
@@ -60,14 +61,14 @@
   color: var(--color-accent);
 }
 .intro {
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.8;
-  max-width: 350px;
+  max-width: 480px;
   color: var(--color-ink-muted);
   margin: 0 0 30px;
 }
 .entry {
-  max-width: 420px;
+  max-width: 560px;
 }
 .entryHeading {
   display: flex;
@@ -76,7 +77,7 @@
   margin-bottom: 14px;
 }
 .entryHeading h2 {
-  font-size: 17px;
+  font-size: 20px;
   font-weight: 500;
   margin: 0;
   letter-spacing: -0.03em;
@@ -114,7 +115,7 @@
   min-width: 0;
   border: 0;
   background: transparent;
-  font-size: 12px;
+  font-size: 14px;
   outline: none;
   padding: 8px 6px;
   color: var(--color-ink);
@@ -205,7 +206,7 @@
 .imageMask {
   position: relative;
   width: 100%;
-  max-width: 440px;
+  max-width: 360px;
   aspect-ratio: 520 / 440;
   -webkit-mask: url('/brand/y-mask.svg') center / contain no-repeat;
   mask: url('/brand/y-mask.svg') center / contain no-repeat;
@@ -239,7 +240,7 @@
   letter-spacing: 0.18em;
 }
 .visualBottom h2 {
-  font-size: clamp(24px, 2.5vw, 36px);
+  font-size: clamp(20px, 1.8vw, 28px);
   font-weight: 500;
   line-height: 1.2;
   letter-spacing: -0.05em;
