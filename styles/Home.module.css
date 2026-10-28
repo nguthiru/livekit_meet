@@ -221,8 +221,67 @@
   line-height: 1.6;
 }
 .compass {
-  font-size: 40px;
-  font-weight: 400;
+  display: block;
+  width: 88px;
+  height: 88px;
+  flex-shrink: 0;
+  overflow: visible;
+  border-radius: 50%;
+  backdrop-filter: blur(6px);
+}
+.compassSurface {
+  fill: #152820;
+  fill-opacity: 0.45;
+}
+.compassRim {
+  stroke: #fffef2;
+  stroke-opacity: 0.65;
+  stroke-width: 0.8;
+}
+.compassDial {
+  stroke: #fffef2;
+  stroke-opacity: 0.7;
+  stroke-linecap: round;
+  transform-origin: 60px 60px;
+  animation: compass-dial 60s linear infinite;
+}
+.compassLabels {
+  fill: #fffef2;
+  font-size: 8px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+.compassNeedle {
+  transform: rotate(-18deg);
+  transform-origin: 60px 60px;
+  animation: compass-bearing 14s ease-in-out infinite;
+}
+.compassNorth {
+  fill: #e3ac77;
+}
+.compassSouth {
+  fill: #fffef2;
+  fill-opacity: 0.75;
+}
+.compassPivot {
+  fill: #fffef2;
+}
+@keyframes compass-bearing {
+  0%,
+  100% {
+    transform: rotate(-18deg);
+  }
+  35% {
+    transform: rotate(26deg);
+  }
+  70% {
+    transform: rotate(4deg);
+  }
+}
+@keyframes compass-dial {
+  to {
+    transform: rotate(360deg);
+  }
 }
 .visualBottom {
   position: absolute;
@@ -313,6 +372,16 @@
   }
 }
 @media (max-width: 1000px) {
+  .visualTop {
+    top: 32px;
+    right: 20px;
+    gap: 8px;
+    font-size: 10px;
+  }
+  .compass {
+    width: 64px;
+    height: 64px;
+  }
   .hero {
     gap: 32px;
   }
@@ -385,4 +454,11 @@
 .page {
   height: 100dvh;
   min-height: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .compassDial,
+  .compassNeedle {
+    animation: none;
+  }
 }

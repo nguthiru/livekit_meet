@@ -7,7 +7,7 @@ Reference: https://www.yoonka.com/ (observed October 28, 2026).
 - Poppins for interface and display; Nikodecs only for the Yoonka wordmark. Fonts served locally.
 - Desktop lobby allocates 65% of the hero to meeting actions and 35% to decoration, with a wider form and a smaller secondary caption. Mobile stacks actions before artwork.
 - Lobby: split meeting workbench and illustrated airship scene. Pre-join: a focused device-check workbench. Conference: quiet functional surfaces, a branded header and compact icon dock.
-- The lobby decoration uses the original rounded rectangular airship panel with captions over the photograph. No Y mask or navigation-chart overlay.
+- The lobby decoration uses the original rounded rectangular airship panel with captions over the photograph. A small glass compass overlays the image, with a slowly moving needle and dial; reduced-motion preferences freeze both. No Y mask.
 - Use the provided Yoonka mark and airship artwork. Keep illustrations outside the active meeting area.
 - Rounded fields, pill navigation, thin warm borders, generous spacing. No marketing claims or invented meeting data.
 - Meeting controls use icons with accessible names, native tooltips and visible keyboard focus. State changes use color and icon changes; motion respects reduced-motion preferences.

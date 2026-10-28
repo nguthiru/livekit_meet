@@ -219,12 +219,49 @@ export default function Page() {
             alt="An adventurous crew gathering beneath a copper airship in a sunlit city"
             fill
             priority
-            sizes="(max-width: 800px) 100vw, 50vw"
+            sizes="(max-width: 760px) 100vw, 35vw"
             className={styles.airship}
           />
           <div className={styles.imageTint} />
           <div className={styles.visualTop}>
-            <span className={styles.compass}>✳</span>
+            <svg
+              className={styles.compass}
+              viewBox="0 0 120 120"
+              fill="none"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <circle cx="60" cy="60" r="57" className={styles.compassSurface} />
+              <circle cx="60" cy="60" r="53" className={styles.compassRim} />
+              <g className={styles.compassDial}>
+                {Array.from({ length: 32 }, (_, index) => (
+                  <path
+                    key={index}
+                    d={`M60 10v${index % 4 === 0 ? 7 : 3}`}
+                    transform={`rotate(${index * 11.25} 60 60)`}
+                  />
+                ))}
+              </g>
+              <g className={styles.compassLabels}>
+                <text x="60" y="29" textAnchor="middle">
+                  N
+                </text>
+                <text x="94" y="63" textAnchor="middle">
+                  E
+                </text>
+                <text x="60" y="98" textAnchor="middle">
+                  S
+                </text>
+                <text x="26" y="63" textAnchor="middle">
+                  W
+                </text>
+              </g>
+              <g className={styles.compassNeedle}>
+                <path d="m60 33 8 27-8-4-8 4Z" className={styles.compassNorth} />
+                <path d="m60 87-8-27 8 4 8-4Z" className={styles.compassSouth} />
+              </g>
+              <circle cx="60" cy="60" r="3" className={styles.compassPivot} />
+            </svg>
             <span>
               Different places.
               <br />
