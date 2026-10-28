@@ -2,200 +2,277 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import React, { Suspense, useState } from 'react';
+import Image from 'next/image';
 import { encodePassphrase, generateRoomId, randomString } from '@/lib/client-utils';
+import { Brand } from '@/lib/Brand';
+import { Icon } from '@/lib/Icons';
 import styles from '../styles/Home.module.css';
 
-function Tabs(props: React.PropsWithChildren<{}>) {
-  const searchParams = useSearchParams();
-  const tabIndex = searchParams?.get('tab') === 'custom' ? 1 : 0;
-
+function MeetingEntry() {
   const router = useRouter();
-  function onTabSelected(index: number) {
-    const tab = index === 1 ? 'custom' : 'demo';
-    router.push(`/?tab=${tab}`);
+  const searchParams = useSearchParams();
+  const custom = searchParams?.get('tab') === 'custom';
+  const [e2ee, setE2ee] = useState(false);
+  const [passphrase, setPassphrase] = useState(() => randomString(64));
+  const [roomName, setRoomName] = useState('');
+  const [joinValue, setJoinValue] = useState('');
+  const [error, setError] = useState('');
+
+  function joinMeeting(event: React.FormEvent) {
+    event.preventDefault();
+    setError('');
+    const value = joinValue.trim();
+    if (!value) return;
+    if (/^https?:\/\//i.test(value)) {
+      try {
+        const url = new URL(value);
+        if (!/^\/rooms\/[^/]+\/?$/.test(url.pathname)) throw new Error();
+        router.push(`${url.pathname}${url.search}${url.hash}`);
+      } catch {
+        setError('Enter a meeting link or room name.');
+      }
+    } else {
+      router.push(`/rooms/${encodeURIComponent(value)}`);
+    }
   }
 
-  let tabs = React.Children.map(props.children, (child, index) => {
-    return (
-      <button
-        className="lk-button"
-        onClick={() => {
-          if (onTabSelected) {
-            onTabSelected(index);
-          }
-        }}
-        aria-pressed={tabIndex === index}
-      >
-        {/* @ts-ignore */}
-        {child?.props.label}
-      </button>
-    );
-  });
-
-  return (
-    <div className={styles.tabContainer}>
-      <div className={styles.tabSelect}>{tabs}</div>
-      {/* @ts-ignore */}
-      {props.children[tabIndex]}
-    </div>
-  );
-}
-
-function DemoMeetingTab(props: { label: string }) {
-  const router = useRouter();
-  const [e2ee, setE2ee] = useState(false);
-  const [sharedPassphrase, setSharedPassphrase] = useState(randomString(64));
-  const startMeeting = () => {
-    if (e2ee) {
-      router.push(`/rooms/${generateRoomId()}#${encodePassphrase(sharedPassphrase)}`);
-    } else {
-      router.push(`/rooms/${generateRoomId()}`);
-    }
-  };
-  return (
-    <div className={styles.tabContent}>
-      <p style={{ margin: 0 }}>Try LiveKit Meet for free with our live demo project.</p>
-      <button style={{ marginTop: '1rem' }} className="lk-button" onClick={startMeeting}>
-        Start Meeting
-      </button>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-        <div style={{ display: 'flex', flexDirection: 'row', gap: '1rem' }}>
-          <input
-            id="use-e2ee"
-            type="checkbox"
-            checked={e2ee}
-            onChange={(ev) => setE2ee(ev.target.checked)}
-          ></input>
-          <label htmlFor="use-e2ee">Enable end-to-end encryption</label>
-        </div>
-        {e2ee && (
-          <div style={{ display: 'flex', flexDirection: 'row', gap: '1rem' }}>
-            <label htmlFor="passphrase">Passphrase</label>
-            <input
-              id="passphrase"
-              type="password"
-              value={sharedPassphrase}
-              onChange={(ev) => setSharedPassphrase(ev.target.value)}
-            />
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function CustomConnectionTab(props: { label: string }) {
-  const router = useRouter();
-
-  const [e2ee, setE2ee] = useState(false);
-  const [sharedPassphrase, setSharedPassphrase] = useState(randomString(64));
-
-  const onSubmit: React.FormEventHandler<HTMLFormElement> = (event) => {
+  function startMeeting(event: React.FormEvent) {
     event.preventDefault();
-    const formData = new FormData(event.target as HTMLFormElement);
-    const serverUrl = formData.get('serverUrl');
-    const token = formData.get('token');
-    if (e2ee) {
-      router.push(
-        `/custom/?liveKitUrl=${serverUrl}&token=${token}#${encodePassphrase(sharedPassphrase)}`,
-      );
-    } else {
-      router.push(`/custom/?liveKitUrl=${serverUrl}&token=${token}`);
-    }
-  };
-  return (
-    <form className={styles.tabContent} onSubmit={onSubmit}>
-      <p style={{ marginTop: 0 }}>
-        Connect LiveKit Meet with a custom server using LiveKit Cloud or LiveKit Server.
-      </p>
-      <input
-        id="serverUrl"
-        name="serverUrl"
-        type="url"
-        placeholder="LiveKit Server URL: wss://*.livekit.cloud"
-        required
-      />
-      <textarea
-        id="token"
-        name="token"
-        placeholder="Token"
-        required
-        rows={5}
-        style={{ padding: '1px 2px', fontSize: 'inherit', lineHeight: 'inherit' }}
-      />
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-        <div style={{ display: 'flex', flexDirection: 'row', gap: '1rem' }}>
-          <input
-            id="use-e2ee"
-            type="checkbox"
-            checked={e2ee}
-            onChange={(ev) => setE2ee(ev.target.checked)}
-          ></input>
-          <label htmlFor="use-e2ee">Enable end-to-end encryption</label>
-        </div>
-        {e2ee && (
-          <div style={{ display: 'flex', flexDirection: 'row', gap: '1rem' }}>
-            <label htmlFor="passphrase">Passphrase</label>
-            <input
-              id="passphrase"
-              type="password"
-              value={sharedPassphrase}
-              onChange={(ev) => setSharedPassphrase(ev.target.value)}
-            />
-          </div>
-        )}
-      </div>
+    const room = roomName.trim() || generateRoomId();
+    router.push(
+      `/rooms/${encodeURIComponent(room)}${e2ee ? `#${encodePassphrase(passphrase)}` : ''}`,
+    );
+  }
 
-      <hr
-        style={{ width: '100%', borderColor: 'rgba(255, 255, 255, 0.15)', marginBlock: '1rem' }}
-      />
-      <button
-        style={{ paddingInline: '1.25rem', width: '100%' }}
-        className="lk-button"
-        type="submit"
-      >
-        Connect
-      </button>
-    </form>
+  function connectCustom(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    const params = new URLSearchParams({
+      liveKitUrl: String(data.get('serverUrl')),
+      token: String(data.get('token')),
+    });
+    router.push(`/custom?${params}${e2ee ? `#${encodePassphrase(passphrase)}` : ''}`);
+  }
+
+  const encryption = (
+    <>
+      <label className={styles.encryption}>
+        <input type="checkbox" checked={e2ee} onChange={(event) => setE2ee(event.target.checked)} />
+        End-to-end encryption
+        <Icon name="shield" width={16} height={16} />
+      </label>
+      {e2ee && (
+        <label className={styles.field}>
+          Shared passphrase
+          <input
+            type="password"
+            value={passphrase}
+            required
+            onChange={(event) => setPassphrase(event.target.value)}
+          />
+          <small>Share this with your crew. Transcription requires an unencrypted room.</small>
+        </label>
+      )}
+    </>
+  );
+
+  return (
+    <div className={styles.entry}>
+      <div className={styles.entryHeading}>
+        <h2>{custom ? 'Your server. Your space.' : 'Bring your crew together.'}</h2>
+        <button
+          className="icon-button"
+          type="button"
+          title={custom ? 'Back to meetings' : 'Custom server connection'}
+          aria-label={custom ? 'Back to meetings' : 'Custom server connection'}
+          onClick={() => router.push(custom ? '/' : '/?tab=custom')}
+        >
+          <Icon name={custom ? 'back' : 'server'} />
+        </button>
+      </div>
+      {custom ? (
+        <form className={styles.customForm} onSubmit={connectCustom}>
+          <label className={styles.field}>
+            Server URL
+            <input
+              name="serverUrl"
+              type="url"
+              placeholder="wss://your-server.livekit.cloud"
+              required
+            />
+          </label>
+          <label className={styles.field}>
+            Access token
+            <textarea name="token" placeholder="Paste your participant token" rows={3} required />
+          </label>
+          {encryption}
+          <div className={styles.actionLabel}>
+            <span>Connect to your server</span>
+            <button
+              className="icon-button primary"
+              aria-label="Connect to server"
+              title="Connect to server"
+            >
+              <Icon name="arrow" />
+            </button>
+          </div>
+        </form>
+      ) : (
+        <>
+          <form onSubmit={startMeeting} className={styles.startForm}>
+            <label htmlFor="room-name">Start a new meeting</label>
+            <div className={styles.inputAction}>
+              <input
+                id="room-name"
+                value={roomName}
+                onChange={(event) => setRoomName(event.target.value)}
+                placeholder="Name your room (optional)"
+                maxLength={100}
+              />
+              <button
+                className="icon-button primary"
+                type="submit"
+                aria-label="Start a new meeting"
+                title="Start a new meeting"
+              >
+                <Icon name="video" />
+              </button>
+            </div>
+            {encryption}
+          </form>
+          <div className={styles.or}>
+            <span />
+            or join your team
+            <span />
+          </div>
+          <form onSubmit={joinMeeting} className={styles.joinForm}>
+            <label className="sr-only" htmlFor="meeting-link">
+              Meeting link or room name
+            </label>
+            <div className={styles.inputAction}>
+              <Icon name="link" />
+              <input
+                id="meeting-link"
+                value={joinValue}
+                onChange={(event) => setJoinValue(event.target.value)}
+                placeholder="Meeting link or room name"
+                required
+              />
+              <button
+                className="icon-button"
+                type="submit"
+                aria-label="Join meeting"
+                title="Join meeting"
+              >
+                <Icon name="arrow" />
+              </button>
+            </div>
+          </form>
+          {error && (
+            <p className={styles.error} role="alert">
+              {error}
+            </p>
+          )}
+        </>
+      )}
+    </div>
   );
 }
 
 export default function Page() {
   return (
-    <>
-      <main className={styles.main} data-lk-theme="default">
-        <div className="header">
-          <img src="/images/livekit-meet-home.svg" alt="LiveKit Meet" width="360" height="45" />
-          <h2>
-            Open source video conferencing app built on{' '}
-            <a href="https://github.com/livekit/components-js?ref=meet" rel="noopener">
-              LiveKit&nbsp;Components
-            </a>
-            ,{' '}
-            <a href="https://livekit.io/cloud?ref=meet" rel="noopener">
-              LiveKit&nbsp;Cloud
-            </a>{' '}
-            and Next.js.
-          </h2>
+    <main className={styles.page}>
+      <header className={styles.navigation}>
+        <Brand />
+        <div className={styles.navRight}>
+          <span>A little closer, wherever you are.</span>
+          <a
+            className="icon-button"
+            href="https://www.yoonka.com/"
+            title="Visit Yoonka"
+            aria-label="Visit Yoonka"
+          >
+            <Icon name="arrow" style={{ transform: 'rotate(-45deg)' }} />
+          </a>
         </div>
-        <Suspense fallback="Loading">
-          <Tabs>
-            <DemoMeetingTab label="Demo" />
-            <CustomConnectionTab label="Custom" />
-          </Tabs>
-        </Suspense>
-      </main>
-      <footer data-lk-theme="default">
-        Hosted on{' '}
-        <a href="https://livekit.io/cloud?ref=meet" rel="noopener">
-          LiveKit Cloud
+      </header>
+      <section className={styles.hero}>
+        <div className={styles.heroContent}>
+          <div className={styles.eyebrow}>
+            <span /> A space for your next big idea
+          </div>
+          <h1>
+            Great things
+            <br />
+            start with <span>hello.</span>
+          </h1>
+          <p className={styles.intro}>
+            Gather your people. Share your screen. Make a little progress, together.
+          </p>
+          <Suspense fallback={<p>Preparing your meeting space…</p>}>
+            <MeetingEntry />
+          </Suspense>
+        </div>
+        <div className={styles.visual}>
+          <Image
+            src="/brand/airship.webp"
+            alt="An adventurous crew gathering beneath a copper airship in a sunlit city"
+            fill
+            priority
+            sizes="(max-width: 800px) 100vw, 50vw"
+            className={styles.airship}
+          />
+          <div className={styles.imageTint} />
+          <div className={styles.visualTop}>
+            <span className={styles.compass}>✳</span>
+            <span>
+              Different places.
+              <br />
+              Same adventure.
+            </span>
+          </div>
+          <div className={styles.visualBottom}>
+            <span>THE NEXT CHAPTER STARTS HERE</span>
+            <h2>
+              Your crew.
+              <br />
+              One room.
+            </h2>
+            <div className={styles.imageRule} />
+            <p>Powered by people. Connected by Yoonka.</p>
+          </div>
+        </div>
+      </section>
+      <section className={styles.features} aria-label="Meeting features">
+        <div>
+          <Icon name="video" />
+          <span>
+            <strong>Room for everyone</strong>
+            <small>Video, audio & screen sharing</small>
+          </span>
+        </div>
+        <div>
+          <Icon name="transcript" />
+          <span>
+            <strong>Stay in the conversation</strong>
+            <small>Start and stop transcription in a click</small>
+          </span>
+        </div>
+        <div>
+          <Icon name="smile" />
+          <span>
+            <strong>A little more human</strong>
+            <small>Say it with a live reaction</small>
+          </span>
+        </div>
+      </section>
+      <footer className={styles.footer}>
+        <span>© {new Date().getFullYear()} Yoonka</span>
+        <span>Built for your team. Powered by LiveKit.</span>
+        <a href="https://www.yoonka.com/">
+          Part of the Yoonka universe <Icon name="arrow" width={14} />
         </a>
-        . Source code on{' '}
-        <a href="https://github.com/livekit/meet?ref=meet" rel="noopener">
-          GitHub
-        </a>
-        .
       </footer>
-    </>
+    </main>
   );
 }

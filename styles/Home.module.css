@@ -1,40 +1,394 @@
-.main {
-  position: relative;
+/* Hallmark · genre: playful · source: yoonka.com · ivory, copper & Poppins
+ * Structure: split meeting workbench with illustrated world; shared app design system. */
+.page {
+  min-height: 100dvh;
+  overflow-y: auto;
+  background: var(--color-paper);
+  padding: 24px clamp(24px, 5vw, 88px) 0;
+}
+.navigation {
+  max-width: 1440px;
+  margin: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  border: 1px solid var(--color-rule);
+  border-radius: 80px;
+  background: #ffffff70;
+}
+.navRight {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  font-size: 12px;
+  color: var(--color-ink-muted);
+}
+.hero {
+  max-width: 1440px;
+  margin: 32px auto 32px;
   display: grid;
-  gap: 1rem;
-  justify-content: center;
-  place-content: center;
-  justify-items: center;
-  overflow: auto;
-  flex-grow: 1;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(36px, 6vw, 100px);
+  align-items: stretch;
 }
-
-.tabContainer {
-  width: 100%;
-  max-width: 500px;
-  padding-inline: 2rem;
+.heroContent {
+  padding: 16px 0 8px;
 }
-
-.tabSelect {
+.eyebrow {
   display: flex;
-  justify-content: stretch;
-  gap: 0.125rem;
-  padding: 0.125rem;
-  margin: 0 auto 1.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 0.5rem;
+  align-items: center;
+  gap: 9px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
 }
-
-.tabSelect > * {
-  width: 100%;
+.eyebrow > span {
+  width: 7px;
+  height: 7px;
+  background: var(--color-accent);
+  border-radius: 50%;
 }
-
-.tabContent {
+.hero h1 {
+  font-size: clamp(50px, 5vw, 76px);
+  letter-spacing: -0.065em;
+  line-height: 1.04;
+  font-weight: 500;
+  margin: 24px 0 22px;
+}
+.hero h1 > span {
+  color: var(--color-accent);
+}
+.intro {
+  font-size: 14px;
+  line-height: 1.8;
+  max-width: 350px;
+  color: var(--color-ink-muted);
+  margin: 0 0 30px;
+}
+.entry {
+  max-width: 420px;
+}
+.entryHeading {
   display: flex;
-  justify-content: center;
-  flex-direction: column;
-  gap: 0.75rem;
-  padding: 1.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 0.5rem;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.entryHeading h2 {
+  font-size: 17px;
+  font-weight: 500;
+  margin: 0;
+  letter-spacing: -0.03em;
+}
+.entryHeading button {
+  width: 34px;
+  height: 34px;
+  background: transparent;
+}
+.entryHeading button svg {
+  width: 18px;
+}
+.startForm > label:first-child {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: var(--color-ink-muted);
+}
+.inputAction {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--color-rule);
+  border-radius: 15px;
+  padding: 7px;
+  background: var(--color-surface);
+  transition: border-color 0.18s;
+}
+.inputAction:focus-within {
+  border-color: var(--color-accent);
+}
+.inputAction > input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  font-size: 12px;
+  outline: none;
+  padding: 8px 6px;
+  color: var(--color-ink);
+}
+.inputAction > svg {
+  flex-shrink: 0;
+  margin-left: 10px;
+  width: 17px;
+  color: var(--color-ink-muted);
+}
+.inputAction > button {
+  flex-shrink: 0;
+}
+.encryption {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  font-size: 10px;
+  color: var(--color-ink-muted);
+  cursor: pointer;
+}
+.encryption input {
+  accent-color: var(--color-accent);
+  margin: 0;
+}
+.encryption svg {
+  margin-left: auto;
+}
+.or {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 20px 0;
+  font-size: 10px;
+  color: var(--color-ink-muted);
+}
+.or span {
+  flex: 1;
+  height: 1px;
+  background: var(--color-rule);
+}
+.customForm {
+  display: grid;
+  gap: 12px;
+}
+.field {
+  display: grid;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--color-ink-muted);
+  margin-top: 12px;
+}
+.field input,
+.field textarea {
+  border: 1px solid var(--color-rule);
+  border-radius: 10px;
+  padding: 12px;
+  width: 100%;
+  color: var(--color-ink);
+  background: var(--color-surface);
+  font: inherit;
+}
+.field small {
+  font-size: 10px;
+  line-height: 1.6;
+}
+.actionLabel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+}
+.error {
+  color: var(--color-danger);
+  font-size: 12px;
+}
+.visual {
+  position: relative;
+  min-height: 560px;
+  overflow: hidden;
+  border-radius: 120px 24px 24px 24px;
+  background: #9ca68c;
+}
+.airship {
+  object-fit: cover;
+  object-position: 38% center;
+}
+.imageTint {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, #15282033 0%, transparent 35%, #10231dcc 100%);
+}
+.visualTop {
+  position: absolute;
+  top: 34px;
+  right: 30px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: white;
+  font-size: 11px;
+  line-height: 1.6;
+}
+.compass {
+  font-size: 40px;
+  font-weight: 400;
+}
+.visualBottom {
+  position: absolute;
+  bottom: 34px;
+  left: 32px;
+  right: 32px;
+  color: #fffef2;
+}
+.visualBottom > span {
+  font-size: 9px;
+  letter-spacing: 0.18em;
+}
+.visualBottom h2 {
+  font-size: clamp(44px, 4.5vw, 68px);
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -0.05em;
+  margin: 16px 0 24px;
+}
+.imageRule {
+  height: 1px;
+  background: #fffef25c;
+}
+.visualBottom p {
+  font-size: 10px;
+  margin: 16px 0 0;
+}
+.features {
+  max-width: 1440px;
+  margin: auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  padding: 28px 0;
+  border-top: 1px solid var(--color-rule);
+  border-bottom: 1px solid var(--color-rule);
+}
+.features > div {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 32px;
+  border-right: 1px solid var(--color-rule);
+}
+.features > div:first-child {
+  padding-left: 0;
+}
+.features > div:last-child {
+  border-right: 0;
+}
+.features > div > svg {
+  color: var(--color-accent);
+  flex-shrink: 0;
+}
+.features span {
+  display: grid;
+  gap: 4px;
+}
+.features strong {
+  font-size: 11px;
+  font-weight: 500;
+}
+.features small {
+  font-size: 10px;
+  color: var(--color-ink-muted);
+}
+.footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  max-width: 1440px;
+  margin: auto;
+  padding: 22px 0;
+  border: 0;
+  background: transparent;
+  font-size: 9px;
+  color: var(--color-ink-muted);
+}
+.footer a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-ink);
+  text-decoration: none;
+}
+@media (min-width: 1600px) {
+  .hero {
+    margin-top: 60px;
+  }
+  .visual {
+    min-height: 730px;
+  }
+}
+@media (max-width: 1000px) {
+  .hero {
+    gap: 32px;
+  }
+  .features > div {
+    padding: 0 14px;
+    gap: 10px;
+  }
+  .navRight > span {
+    display: none;
+  }
+  .visual {
+    min-height: 560px;
+    border-top-left-radius: 90px;
+  }
+}
+@media (max-width: 760px) {
+  .page {
+    padding: 16px 20px 0;
+  }
+  .navigation {
+    padding: 8px 12px;
+  }
+  .hero {
+    grid-template-columns: 1fr;
+    margin: 28px auto;
+    gap: 28px;
+  }
+  .heroContent {
+    padding: 8px 4px;
+  }
+  .hero h1 {
+    font-size: clamp(44px, 11vw, 66px);
+  }
+  .intro {
+    max-width: 330px;
+  }
+  .entry {
+    max-width: none;
+  }
+  .visual {
+    min-height: 400px;
+    border-radius: 80px 20px 20px 20px;
+  }
+  .airship {
+    object-position: center 38%;
+  }
+  .visualBottom h2 {
+    font-size: 48px;
+  }
+  .features {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    padding: 28px 4px;
+  }
+  .features > div {
+    border: 0;
+    padding: 0;
+    gap: 16px;
+  }
+  .features strong {
+    font-size: 12px;
+  }
+  .features small {
+    font-size: 11px;
+  }
+  .footer {
+    flex-wrap: wrap;
+    font-size: 9px;
+  }
+  .footer > span:nth-child(2) {
+    display: none;
+  }
+}
+.page {
+  height: 100dvh;
+  min-height: 0;
 }

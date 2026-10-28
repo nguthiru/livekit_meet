@@ -1,6 +1,6 @@
 'use client';
 
-import { formatChatMessageLinks, RoomContext, VideoConference } from '@livekit/components-react';
+import { formatChatMessageLinks, RoomContext } from '@livekit/components-react';
 import {
   ExternalE2EEKeyProvider,
   LogLevel,
@@ -12,8 +12,12 @@ import {
   VideoPresets,
   type VideoCodec,
 } from 'livekit-client';
+import { MeetingHeader } from '@/lib/MeetingHeader';
+import { MeetingConference } from '@/lib/MeetingConference';
+import { MeetingReactions } from '@/lib/MeetingReactions';
+import { TranscriptionButton } from '../rooms/[roomName]/TranscriptionButton';
 import { DebugMode } from '@/lib/Debug';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { KeyboardShortcuts } from '@/lib/KeyboardShortcuts';
 import { SettingsMenu } from '@/lib/SettingsMenu';
 import { useSetupE2EE } from '@/lib/useSetupE2EE';
@@ -25,7 +29,7 @@ export function VideoConferenceClientImpl(props: {
   codec: VideoCodec | undefined;
   singlePeerConnection: boolean | undefined;
 }) {
-  const keyProvider = new ExternalE2EEKeyProvider();
+  const keyProvider = useMemo(() => new ExternalE2EEKeyProvider(), []);
   const { worker, e2eePassphrase } = useSetupE2EE();
   const e2eeEnabled = !!(e2eePassphrase && worker);
 
@@ -56,7 +60,7 @@ export function VideoConferenceClientImpl(props: {
         : undefined,
       singlePeerConnection: props.singlePeerConnection,
     };
-  }, [e2eeEnabled, props.codec, keyProvider, worker]);
+  }, [e2eeEnabled, props.codec, props.singlePeerConnection, keyProvider, worker]);
 
   const room = useMemo(() => new Room(roomOptions), [roomOptions]);
 
@@ -100,17 +104,23 @@ export function VideoConferenceClientImpl(props: {
   }, [room, props.liveKitUrl, props.token, connectOptions, e2eeSetupComplete]);
 
   useLowCPUOptimizer(room);
+  const conferenceRef = useRef<HTMLDivElement>(null);
 
   return (
-    <div className="lk-room-container">
+    <div className="lk-room-container yoonka-room">
       <RoomContext.Provider value={room}>
+        <MeetingHeader />
         <KeyboardShortcuts />
-        <VideoConference
-          chatMessageFormatter={formatChatMessageLinks}
-          SettingsComponent={
-            process.env.NEXT_PUBLIC_SHOW_SETTINGS_MENU === 'true' ? SettingsMenu : undefined
-          }
-        />
+        <div ref={conferenceRef} className="meeting-conference">
+          <MeetingConference
+            chatMessageFormatter={formatChatMessageLinks}
+            SettingsComponent={
+              process.env.NEXT_PUBLIC_SHOW_SETTINGS_MENU === 'true' ? SettingsMenu : undefined
+            }
+          />
+          <TranscriptionButton conferenceRef={conferenceRef} />
+          <MeetingReactions conferenceRef={conferenceRef} />
+        </div>
         <DebugMode logLevel={LogLevel.debug} />
       </RoomContext.Provider>
     </div>

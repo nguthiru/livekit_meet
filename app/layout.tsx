@@ -1,52 +1,28 @@
 import '../styles/globals.css';
 import '@livekit/components-styles';
 import '@livekit/components-styles/prefabs';
+import '../styles/Yoonka.css';
 import type { Metadata, Viewport } from 'next';
 import { Toaster } from 'react-hot-toast';
 
 export const metadata: Metadata = {
-  title: {
-    default: 'LiveKit Meet | Conference app build with LiveKit open source',
-    template: '%s',
-  },
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'),
+  title: { default: 'Yoonka Meet — Your crew. One room.', template: '%s | Yoonka Meet' },
   description:
-    'LiveKit is an open source WebRTC project that gives you everything needed to build scalable and real-time audio and/or video experiences in your applications.',
-  twitter: {
-    creator: '@livekitted',
-    site: '@livekitted',
-    card: 'summary_large_image',
-  },
+    'A space for your next conversation. Meet your team with video, screen sharing, live reactions and transcription.',
   openGraph: {
-    url: 'https://meet.livekit.io',
+    title: 'Yoonka Meet — Your crew. One room.',
+    description: 'Different places. Same adventure. Bring your people together with Yoonka Meet.',
     images: [
-      {
-        url: 'https://meet.livekit.io/images/livekit-meet-open-graph.png',
-        width: 2000,
-        height: 1000,
-        type: 'image/png',
-      },
+      { url: '/brand/airship.webp', width: 1600, height: 1095, alt: 'Yoonka airship and crew' },
     ],
-    siteName: 'LiveKit Meet',
+    siteName: 'Yoonka Meet',
+    type: 'website',
   },
-  icons: {
-    icon: {
-      rel: 'icon',
-      url: '/favicon.ico',
-    },
-    apple: [
-      {
-        rel: 'apple-touch-icon',
-        url: '/images/livekit-apple-touch.png',
-        sizes: '180x180',
-      },
-      { rel: 'mask-icon', url: '/images/livekit-safari-pinned-tab.svg', color: '#070707' },
-    ],
-  },
+  icons: { icon: '/brand/favicon.svg', apple: '/brand/yoonka-mark.png' },
 };
 
-export const viewport: Viewport = {
-  themeColor: '#070707',
-};
+export const viewport: Viewport = { themeColor: '#fffef2' };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
