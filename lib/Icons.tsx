@@ -17,7 +17,8 @@ export type IconName =
   | 'close'
   | 'server'
   | 'copy'
-  | 'mic';
+  | 'mic'
+  | 'hand';
 const paths: Record<IconName, React.ReactNode> = {
   video: (
     <>
@@ -85,6 +86,11 @@ const paths: Record<IconName, React.ReactNode> = {
     <>
       <rect x="8" y="8" width="12" height="13" rx="2" />
       <path d="M16 8V3H3v13h5" />
+    </>
+  ),
+  hand: (
+    <>
+      <path d="M8 13V6a1.5 1.5 0 0 1 3 0v5M11 6V3.5a1.5 1.5 0 0 1 3 0V11M14 6a1.5 1.5 0 0 1 3 0v6M17 9a1.5 1.5 0 0 1 3 0v6a7 7 0 0 1-7 7h-1a5 5 0 0 1-4-2l-4.5-6a1.5 1.5 0 0 1 2.4-1.8L8 15" />
     </>
   ),
   mic: (

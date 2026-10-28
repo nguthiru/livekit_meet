@@ -20,6 +20,7 @@ import {
   type WidgetState,
   type VideoConferenceProps,
 } from '@livekit/components-react';
+import { RaisedHands } from './MeetingHands';
 import { MeetingControlBar } from './MeetingControlBar';
 
 function isEqualTrackRef(a?: TrackReferenceOrPlaceholder, b?: TrackReferenceOrPlaceholder) {
@@ -108,6 +109,7 @@ export function MeetingConference({
       {typeof window !== 'undefined' && (
         <LayoutContextProvider value={layoutContext} onWidgetChange={widgetUpdate}>
           <div className="lk-video-conference-inner">
+            <RaisedHands />
             {!focusTrack ? (
               <div className="lk-grid-layout-wrapper">
                 <GridLayout tracks={tracks}>

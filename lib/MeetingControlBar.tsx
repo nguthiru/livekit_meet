@@ -1,5 +1,6 @@
 // Adapted from LiveKit ControlBar to retain permissions and saved device choices.
 'use client';
+import { RaiseHandButton } from './MeetingHands';
 import { Track } from 'livekit-client';
 import * as React from 'react';
 import {
@@ -212,6 +213,7 @@ export function MeetingControlBar({
           {showText && 'Settings'}
         </button>
       )}
+      <RaiseHandButton />
       {visibleControls.leave && (
         <DisconnectButton aria-label="Leave meeting" title="Leave meeting">
           {showIcon && <LeaveIcon viewBox="0 0 16 16" />}

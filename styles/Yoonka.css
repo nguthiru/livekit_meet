@@ -764,3 +764,55 @@ a.icon-button:active {
   mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m22 2-7 20-4-9-9-4 20-7ZM22 2 11 13'/%3E%3C/svg%3E")
     center / contain no-repeat;
 }
+
+.meeting-raised-hands {
+  display: flex;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+  gap: 8px;
+  max-height: 100px;
+  overflow-y: auto;
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+}
+.meeting-raised-hands:empty {
+  display: none;
+}
+.meeting-raised-hands li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #e5cdb5;
+  border-radius: 12px;
+  background: #f1e5d5;
+  color: var(--color-ink);
+  font-size: 11px;
+}
+.meeting-raised-hands svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: var(--color-accent);
+}
+.meeting-raised-hands span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 420px) {
+  .meeting-conference .lk-control-bar {
+    gap: 4px;
+  }
+  .meeting-conference .lk-control-bar > .lk-button,
+  .meeting-conference .lk-control-bar > .lk-chat-toggle,
+  .meeting-conference .lk-control-bar > .lk-disconnect-button,
+  .meeting-conference .lk-control-bar > .lk-start-audio-button,
+  .meeting-conference .lk-control-bar .meeting-icon-button,
+  .meeting-conference .lk-control-bar .lk-button-group > .lk-button {
+    width: 34px;
+  }
+}

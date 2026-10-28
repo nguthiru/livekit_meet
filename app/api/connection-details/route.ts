@@ -74,6 +74,7 @@ function createParticipantToken(userInfo: AccessTokenOptions, roomName: string) 
     roomJoin: true,
     canPublish: true,
     canPublishData: true,
+    canUpdateOwnMetadata: true,
     canSubscribe: true,
   };
   at.addGrant(grant);

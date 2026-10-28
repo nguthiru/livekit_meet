@@ -40,3 +40,13 @@ Steps to get a local dev setup up and running:
 3. Update the missing environment variables in the newly created `.env.local` file.
 4. Run `pnpm dev` to start the development server and visit [http://localhost:3000](http://localhost:3000) to see the result.
 5. Start development 🎉
+
+## Raising a hand
+
+Use the hand icon in the meeting toolbar to raise or lower your hand. Raised
+hands appear above the video grid and stay visible until lowered or the
+participant leaves, including for people who join the meeting later.
+
+The standard join flow grants the permission needed to update hand state. For
+custom-server connections, issue participant tokens with
+`video.canUpdateOwnMetadata: true` to enable the hand button.
