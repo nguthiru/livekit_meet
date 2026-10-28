@@ -214,16 +214,15 @@ export default function Page() {
           </Suspense>
         </div>
         <div className={styles.visual}>
-          <div className={styles.imageMask}>
-            <Image
-              src="/brand/airship.webp"
-              alt="Y-shaped window onto Yoonka’s airship and crew"
-              fill
-              priority
-              sizes="(max-width: 760px) 100vw, 50vw"
-              className={styles.airship}
-            />
-          </div>
+          <Image
+            src="/brand/airship.webp"
+            alt="An adventurous crew gathering beneath a copper airship in a sunlit city"
+            fill
+            priority
+            sizes="(max-width: 800px) 100vw, 50vw"
+            className={styles.airship}
+          />
+          <div className={styles.imageTint} />
           <div className={styles.visualTop}>
             <span className={styles.compass}>✳</span>
             <span>
@@ -234,7 +233,11 @@ export default function Page() {
           </div>
           <div className={styles.visualBottom}>
             <span>THE NEXT CHAPTER STARTS HERE</span>
-            <h2>Your crew. One room.</h2>
+            <h2>
+              Your crew.
+              <br />
+              One room.
+            </h2>
             <div className={styles.imageRule} />
             <p>Powered by people. Connected by Yoonka.</p>
           </div>
