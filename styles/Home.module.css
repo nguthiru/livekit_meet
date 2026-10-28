@@ -194,60 +194,67 @@
 }
 .visual {
   position: relative;
-  min-height: 560px;
-  overflow: hidden;
-  border-radius: 120px 24px 24px 24px;
-  background: #9ca68c;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  min-width: 0;
+  padding-top: 8px;
+}
+.imageMask {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  aspect-ratio: 520 / 440;
+  -webkit-mask: url('/brand/y-mask.svg') center / contain no-repeat;
+  mask: url('/brand/y-mask.svg') center / contain no-repeat;
 }
 .airship {
   object-fit: cover;
   object-position: 38% center;
 }
-.imageTint {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, #15282033 0%, transparent 35%, #10231dcc 100%);
-}
 .visualTop {
-  position: absolute;
-  top: 34px;
-  right: 30px;
   display: flex;
   align-items: center;
-  gap: 12px;
-  color: white;
-  font-size: 11px;
+  justify-content: center;
+  gap: 10px;
+  order: -1;
+  color: var(--color-ink-muted);
+  font-size: 10px;
   line-height: 1.6;
 }
 .compass {
-  font-size: 40px;
-  font-weight: 400;
+  color: var(--color-accent);
+  font-size: 28px;
 }
 .visualBottom {
-  position: absolute;
-  bottom: 34px;
-  left: 32px;
-  right: 32px;
-  color: #fffef2;
+  width: 100%;
+  text-align: center;
+  color: var(--color-ink);
 }
 .visualBottom > span {
-  font-size: 9px;
+  color: var(--color-accent);
+  font-size: 8px;
   letter-spacing: 0.18em;
 }
 .visualBottom h2 {
-  font-size: clamp(44px, 4.5vw, 68px);
+  font-size: clamp(24px, 2.5vw, 36px);
   font-weight: 500;
-  line-height: 1.1;
+  line-height: 1.2;
   letter-spacing: -0.05em;
-  margin: 16px 0 24px;
+  margin: 10px 0 16px;
 }
 .imageRule {
+  width: 40px;
   height: 1px;
-  background: #fffef25c;
+  margin: auto;
+  background: var(--color-rule);
 }
 .visualBottom p {
+  color: var(--color-ink-muted);
   font-size: 10px;
-  margin: 16px 0 0;
+  margin: 14px 0 0;
 }
 .features {
   max-width: 1440px;
@@ -310,9 +317,6 @@
   .hero {
     margin-top: 60px;
   }
-  .visual {
-    min-height: 730px;
-  }
 }
 @media (max-width: 1000px) {
   .hero {
@@ -324,10 +328,6 @@
   }
   .navRight > span {
     display: none;
-  }
-  .visual {
-    min-height: 560px;
-    border-top-left-radius: 90px;
   }
 }
 @media (max-width: 760px) {
@@ -355,14 +355,17 @@
     max-width: none;
   }
   .visual {
-    min-height: 400px;
-    border-radius: 80px 20px 20px 20px;
+    gap: 20px;
+    padding: 16px 0;
+  }
+  .imageMask {
+    max-width: 440px;
   }
   .airship {
     object-position: center 38%;
   }
   .visualBottom h2 {
-    font-size: 48px;
+    font-size: 28px;
   }
   .features {
     grid-template-columns: 1fr;
