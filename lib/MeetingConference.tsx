@@ -14,12 +14,12 @@ import {
   useCreateLayoutContext,
   usePinnedTracks,
   useTracks,
-  Chat,
   isTrackReference,
   type TrackReferenceOrPlaceholder,
   type WidgetState,
   type VideoConferenceProps,
 } from '@livekit/components-react';
+import { MeetingChat } from './MeetingChat';
 import { RaisedHands } from './MeetingHands';
 import { MeetingControlBar } from './MeetingControlBar';
 
@@ -128,7 +128,7 @@ export function MeetingConference({
             )}
             <MeetingControlBar controls={{ chat: true, settings: !!SettingsComponent }} />
           </div>
-          <Chat
+          <MeetingChat
             style={{ display: widgetState.showChat ? 'grid' : 'none' }}
             messageFormatter={chatMessageFormatter}
             messageEncoder={chatMessageEncoder}

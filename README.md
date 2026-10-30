@@ -50,3 +50,10 @@ participant leaves, including for people who join the meeting later.
 The standard join flow grants the permission needed to update hand state. For
 custom-server connections, issue participant tokens with
 `video.canUpdateOwnMetadata: true` to enable the hand button.
+
+## Chat emojis
+
+Use the smile icon beside the message field to insert standard emojis or the
+custom Yoonka mark, airship and compass. Custom emojis also support the
+shortcodes `:yoonka:`, `:yoonka_airship:` and `:yoonka_compass:`. They travel as
+text and render as inline images for participants using this frontend.
