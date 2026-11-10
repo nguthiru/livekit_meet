@@ -9,6 +9,7 @@ export type IconName =
   | 'back'
   | 'smile'
   | 'transcript'
+  | 'record'
   | 'stop'
   | 'loader'
   | 'check'
@@ -60,6 +61,12 @@ const paths: Record<IconName, React.ReactNode> = {
     </>
   ),
   stop: <rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" stroke="none" />,
+  record: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <circle cx="12" cy="12" r="4" fill="currentColor" stroke="none" />
+    </>
+  ),
   loader: <path d="M21 12a9 9 0 1 1-9-9" />,
   check: <path d="m5 12 4 4L19 6" />,
   shield: (
