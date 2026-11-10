@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
       for await (const chunk of stream) chunks.push(Buffer.from(chunk));
       return new NextResponse(new Uint8Array(Buffer.concat(chunks)), {
         headers: {
-          'Content-Type': 'image/png',
+          'Content-Type': image.endsWith('.gif') ? 'image/gif' : 'image/png',
           'X-Content-Type-Options': 'nosniff',
           'Cache-Control': 'public, max-age=31536000, immutable',
         },
@@ -91,27 +91,49 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Choose an image under 2 MB' }, { status: 400 });
   }
   let image: Buffer;
+  let extension: 'png' | 'gif' = 'png';
   try {
     const input = Buffer.from(await file.arrayBuffer());
     const options = { limitInputPixels: 16_777_216 };
     const metadata = await sharp(input, options).metadata();
     if (!['png', 'jpeg', 'gif', 'webp'].includes(metadata.format ?? ''))
       throw new Error('Unsupported image');
-    image = await sharp(input, options)
-      .rotate()
-      .resize(128, 128, { fit: 'inside', withoutEnlargement: true })
-      .png()
-      .toBuffer();
+    if (metadata.format === 'gif') {
+      const frames = metadata.pages ?? 1;
+      const pixels = (metadata.width ?? 0) * (metadata.pageHeight ?? metadata.height ?? 0) * frames;
+      if (frames > 200 || pixels > options.limitInputPixels) throw new Error('Animation too large');
+      extension = 'gif';
+      image = await sharp(input, { ...options, animated: true })
+        .resize(128, 128, { fit: 'inside', withoutEnlargement: true })
+        .gif({ loop: metadata.loop, delay: metadata.delay })
+        .toBuffer();
+    } else {
+      image = await sharp(input, options)
+        .rotate()
+        .resize(128, 128, { fit: 'inside', withoutEnlargement: true })
+        .png()
+        .toBuffer();
+    }
   } catch {
     return NextResponse.json(
-      { error: 'Use a valid PNG, JPEG, WebP or GIF image (up to 16 megapixels)' },
+      {
+        error: 'Use a valid PNG, JPEG, WebP or GIF (up to 16 megapixels total and 200 GIF frames)',
+      },
       { status: 400 },
+    );
+  }
+  if (image.length > MAX_FILE) {
+    return NextResponse.json(
+      { error: 'Processed emoji exceeds 2 MB. Use a shorter or smaller animation.' },
+      { status: 413 },
     );
   }
   try {
     const { client, bucket } = emojiStorage();
-    const key = `${crypto.randomUUID()}--${name}.png`;
-    await client.putObject(bucket, key, image, image.length, { 'Content-Type': 'image/png' });
+    const key = `${crypto.randomUUID()}--${name}.${extension}`;
+    await client.putObject(bucket, key, image, image.length, {
+      'Content-Type': `image/${extension}`,
+    });
     return NextResponse.json({ emoji: emojiFromObject(key) }, { status: 201 });
   } catch (error) {
     console.error('Emoji upload failed', error);

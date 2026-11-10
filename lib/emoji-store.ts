@@ -1,5 +1,5 @@
 export type StoreEmoji = { label: string; value: string; src: string };
-export const EMOJI_OBJECT = /^([0-9a-f-]{36})--([a-z0-9][a-z0-9_-]{0,31})\.png$/;
+export const EMOJI_OBJECT = /^([0-9a-f-]{36})--([a-z0-9][a-z0-9_-]{0,31})\.(png|gif)$/;
 
 export function emojiFromObject(key: string): StoreEmoji | undefined {
   const match = EMOJI_OBJECT.exec(key);

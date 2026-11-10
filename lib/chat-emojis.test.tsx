@@ -13,6 +13,12 @@ vi.mock('next/image', () => ({
 }));
 
 describe('custom chat emojis', () => {
+  it('renders uploaded GIFs directly so the browser can play the animation', () => {
+    const emoji = emojiFromObject('7335dcab-472d-4aaf-baff-2bb62c2be87a--wave.gif')!;
+    const html = renderToStaticMarkup(<>{formatChatEmojis(emoji.value, undefined, [emoji])}</>);
+    expect(html).toContain('.gif');
+    expect(html).toContain('title="wave"');
+  });
   it('renders uploaded store emojis from their shortcodes for other participants', () => {
     const emoji = emojiFromObject('7335dcab-472d-4aaf-baff-2bb62c2be87a--crew.png')!;
     const html = renderToStaticMarkup(

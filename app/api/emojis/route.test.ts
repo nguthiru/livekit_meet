@@ -56,6 +56,43 @@ async function upload(data: Uint8Array, name = 'Crew party', session = true) {
 }
 
 describe('shared emoji store', () => {
+  it('preserves GIF frames, timing and loop settings while resizing', async () => {
+    const frameSize = 256 * 128 * 3;
+    const input = await sharp(
+      Buffer.concat([
+        Buffer.alloc(frameSize, Buffer.from([255, 0, 0])),
+        Buffer.alloc(frameSize, Buffer.from([0, 255, 0])),
+      ]),
+      { raw: { width: 256, height: 256, channels: 3, pageHeight: 128 } },
+    )
+      .gif({ delay: [80, 140], loop: 3 })
+      .toBuffer();
+    expect((await upload(input, 'wave')).status).toBe(201);
+    const [, object, buffer, , headers] = storage.putObject.mock.calls[0];
+    expect(object).toMatch(/--wave\.gif$/);
+    expect(headers['Content-Type']).toBe('image/gif');
+    const metadata = await sharp(buffer, { animated: true }).metadata();
+    expect(metadata.pages).toBe(2);
+    expect(metadata.width).toBe(128);
+    expect(metadata.pageHeight).toBe(64);
+    expect(metadata.delay).toEqual([80, 140]);
+    expect(metadata.loop).toBe(3);
+    const first = await sharp(buffer, { page: 0 }).raw().toBuffer();
+    const second = await sharp(buffer, { page: 1 }).raw().toBuffer();
+    expect(first.equals(second)).toBe(false);
+  });
+  it('lists and serves animated GIFs with the correct content type', async () => {
+    const gifKey = key.replace('.png', '.gif');
+    storage.listObjectsV2.mockImplementationOnce(async function* () {
+      yield { name: gifKey };
+    });
+    const listed = await GET(new NextRequest('https://meet.test/api/emojis'));
+    expect((await listed.json()).emojis[0].src).toContain('.gif');
+    storage.getObject.mockResolvedValueOnce(Readable.from([Buffer.from('GIF89a')]));
+    const image = await GET(new NextRequest(`https://meet.test/api/emojis?image=${gifKey}`));
+    expect(image.headers.get('content-type')).toBe('image/gif');
+    expect(await image.text()).toBe('GIF89a');
+  });
   it('lists only valid emoji objects with same-origin image URLs', async () => {
     const response = await GET(new NextRequest('https://meet.test/api/emojis'));
     const { emojis } = await response.json();

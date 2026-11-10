@@ -113,7 +113,7 @@ export function EmojiStore({
               disabled={pending}
             />
           </label>
-          <p>Shared with everyone. Up to 2 MB. GIFs use their first frame.</p>
+          <p>Shared with everyone. Up to 2 MB. Animated GIFs welcome.</p>
           <button className="lk-button" type="submit" disabled={pending}>
             {pending ? 'Uploading…' : 'Add to store'}
           </button>

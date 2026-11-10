@@ -60,8 +60,9 @@ text and render as inline images for participants using this frontend.
 
 The picker also includes an **Emoji store**, a shared, searchable collection.
 Choose **Add emoji**, enter a name and upload a PNG, JPEG, WebP or GIF under 2 MB.
-Images are converted to static PNGs at up to 128×128 pixels; GIFs use their first
-frame. Uploaded emojis become available to other participants within 30 seconds
+Images are resized to fit 128×128 pixels. GIFs retain animation, timing and loop
+settings (up to 200 frames and 16 megapixels across all frames); other formats
+become static PNGs. Uploaded emojis become available to other participants within 30 seconds
 or when they focus the meeting window. Select one to insert its shortcode into
 your message. The library persists in MinIO across meetings and deployments.
 
