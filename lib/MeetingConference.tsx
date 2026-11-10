@@ -17,6 +17,7 @@ import {
   useCreateLayoutContext,
   usePinnedTracks,
   useTracks,
+  useRoomContext,
   useLocalParticipantPermissions,
   isTrackReference,
   type TrackReferenceOrPlaceholder,
@@ -26,6 +27,7 @@ import {
 import { MeetingChat } from './MeetingChat';
 import { RaisedHands } from './MeetingHands';
 import { MeetingControlBar } from './MeetingControlBar';
+import { preserveAudioDevices } from './preserveAudioDevices';
 
 function isEqualTrackRef(a?: TrackReferenceOrPlaceholder, b?: TrackReferenceOrPlaceholder) {
   if (!a || !b) return false;
@@ -41,6 +43,10 @@ export function MeetingConference({
   SettingsComponent,
   ...props
 }: VideoConferenceProps) {
+  const room = useRoomContext();
+  React.useEffect(() => {
+    if (navigator.mediaDevices) return preserveAudioDevices(room, navigator.mediaDevices);
+  }, [room]);
   const conferenceRef = React.useRef<HTMLDivElement>(null);
   const [chatSlot, setChatSlot] = React.useState<HTMLElement | null>(null);
   const permissions = useLocalParticipantPermissions();
