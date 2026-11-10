@@ -6,18 +6,17 @@ import { RefObject, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Icon } from './Icons';
 import { useConferenceControlBar } from './useConferenceControlBar';
+import Image from 'next/image';
+import { EmojiStore, useEmojiStore } from './EmojiStore';
+import {
+  decodeReaction,
+  encodeReaction,
+  STANDARD_REACTIONS,
+  type ReactionEmoji,
+} from './reaction-payload';
 
 const TOPIC = 'meet.reaction';
-const REACTIONS = [
-  { emoji: '👍', label: 'Thumbs up' },
-  { emoji: '👏', label: 'Clap' },
-  { emoji: '❤️', label: 'Heart' },
-  { emoji: '😂', label: 'Laugh' },
-  { emoji: '🎉', label: 'Celebrate' },
-  { emoji: '😮', label: 'Surprised' },
-];
-
-type Reaction = { id: number; emoji: string; name: string; expires: number };
+type Reaction = { id: number; emoji: ReactionEmoji; name: string; expires: number };
 
 export function MeetingReactions({
   conferenceRef,
@@ -25,6 +24,7 @@ export function MeetingReactions({
   conferenceRef: RefObject<HTMLDivElement | null>;
 }) {
   const room = useRoomContext();
+  const emojiStore = useEmojiStore();
   const connection = useConnectionState(room);
   const controlBar = useConferenceControlBar(conferenceRef);
   const [open, setOpen] = useState(false);
@@ -36,7 +36,7 @@ export function MeetingReactions({
   const trigger = useRef<HTMLButtonElement>(null);
   const busy = useRef(false);
 
-  function showReaction(emoji: string, name: string) {
+  function showReaction(emoji: ReactionEmoji, name: string) {
     const reaction = { id: sequence.current++, emoji, name, expires: Date.now() + 4500 };
     setReactions((current) => [...current.slice(-4), reaction]);
   }
@@ -48,9 +48,9 @@ export function MeetingReactions({
       _kind?: unknown,
       topic?: string,
     ) => {
-      if (topic !== TOPIC || !participant || payload.byteLength > 100) return;
-      const emoji = new TextDecoder().decode(payload);
-      if (REACTIONS.some((reaction) => reaction.emoji === emoji)) {
+      if (topic !== TOPIC || !participant) return;
+      const emoji = decodeReaction(payload);
+      if (emoji) {
         showReaction(emoji, participant.name || participant.identity);
       }
     };
@@ -95,15 +95,18 @@ export function MeetingReactions({
 
   async function sendReaction(emoji: string) {
     if (busy.current) return;
+    const payload = encodeReaction(emoji, emojiStore.emojis);
+    const selected = payload && decodeReaction(payload);
+    if (!payload || !selected) return;
     busy.current = true;
     setSending(true);
     setError(undefined);
     try {
-      await room.localParticipant.publishData(new TextEncoder().encode(emoji), {
+      await room.localParticipant.publishData(payload, {
         reliable: true,
         topic: TOPIC,
       });
-      showReaction(emoji, room.localParticipant.name || 'You');
+      showReaction(selected, room.localParticipant.name || 'You');
       setOpen(false);
       trigger.current?.focus();
     } catch {
@@ -138,20 +141,31 @@ export function MeetingReactions({
                 className="meeting-reaction-picker"
                 role="dialog"
                 aria-label="Choose a reaction"
+                onKeyDown={(event) => {
+                  if (event.key !== 'Escape') event.stopPropagation();
+                }}
+                onKeyUp={(event) => event.stopPropagation()}
               >
-                {REACTIONS.map(({ emoji, label }) => (
-                  <button
-                    key={label}
-                    className="lk-button"
-                    type="button"
-                    title={label}
-                    aria-label={label}
-                    disabled={sending}
-                    onClick={() => void sendReaction(emoji)}
-                  >
-                    <span aria-hidden="true">{emoji}</span>
-                  </button>
-                ))}
+                <div className="meeting-reaction-standard-grid">
+                  {STANDARD_REACTIONS.map(({ value, label }) => (
+                    <button
+                      key={label}
+                      className="lk-button"
+                      type="button"
+                      title={label}
+                      aria-label={label}
+                      disabled={sending}
+                      onClick={() => void sendReaction(value)}
+                    >
+                      <span aria-hidden="true">{value}</span>
+                    </button>
+                  ))}
+                </div>
+                <EmojiStore
+                  store={emojiStore}
+                  onChoose={(value) => void sendReaction(value)}
+                  disabled={sending}
+                />
               </div>
             )}
             {error && (
@@ -165,7 +179,19 @@ export function MeetingReactions({
       <div className="meeting-reactions" role="status" aria-live="polite" aria-atomic="false">
         {reactions.map((reaction) => (
           <div className="meeting-reaction" key={reaction.id}>
-            <span className="meeting-reaction-emoji">{reaction.emoji}</span>
+            <span className="meeting-reaction-emoji">
+              {reaction.emoji.src ? (
+                <Image
+                  src={reaction.emoji.src}
+                  alt={reaction.emoji.label}
+                  width={48}
+                  height={48}
+                  unoptimized
+                />
+              ) : (
+                reaction.emoji.value
+              )}
+            </span>
             <span className="meeting-reaction-name">{reaction.name}</span>
           </div>
         ))}

@@ -11,7 +11,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Icon } from './Icons';
 import { CHAT_EMOJIS, CUSTOM_CHAT_EMOJIS, formatChatEmojis } from './chat-emojis';
 import Image from 'next/image';
-import { EmojiStore, useEmojiStore } from './EmojiStore';
 
 export function MeetingChat({
   messageFormatter,
@@ -25,7 +24,6 @@ export function MeetingChat({
     [messageDecoder, messageEncoder, channelTopic],
   );
   const { chatMessages, send, isSending } = useChat(options);
-  const emojiStore = useEmojiStore();
   const layout = useMaybeLayoutContext();
   const [draft, setDraft] = useState('');
   const [open, setOpen] = useState(false);
@@ -37,8 +35,8 @@ export function MeetingChat({
   const busy = useRef(false);
   const lastRead = useRef(0);
   const formatter = useCallback(
-    (message: string) => formatChatEmojis(message, messageFormatter, emojiStore.emojis),
-    [messageFormatter, emojiStore.emojis],
+    (message: string) => formatChatEmojis(message, messageFormatter),
+    [messageFormatter],
   );
 
   useEffect(() => {
@@ -192,7 +190,6 @@ export function MeetingChat({
                 </button>
               ))}
             </div>
-            <EmojiStore store={emojiStore} onChoose={insertEmoji} />
           </div>
         )}
         <form className="lk-chat-form" onSubmit={submit}>

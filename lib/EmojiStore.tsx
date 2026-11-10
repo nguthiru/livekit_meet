@@ -43,9 +43,11 @@ export function useEmojiStore() {
 export function EmojiStore({
   store,
   onChoose,
+  disabled = false,
 }: {
   store: ReturnType<typeof useEmojiStore>;
   onChoose: (value: string) => void;
+  disabled?: boolean;
 }) {
   const [search, setSearch] = useState('');
   const [adding, setAdding] = useState(false);
@@ -158,6 +160,7 @@ export function EmojiStore({
               key={emoji.value}
               title={emoji.label}
               aria-label={emoji.label}
+              disabled={disabled}
               onClick={() => onChoose(emoji.value)}
             >
               <Image src={emoji.src} alt="" width={28} height={28} unoptimized />

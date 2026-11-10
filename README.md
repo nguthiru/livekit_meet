@@ -58,13 +58,19 @@ custom Yoonka mark, airship and compass. Custom emojis also support the
 shortcodes `:yoonka:`, `:yoonka_airship:` and `:yoonka_compass:`. They travel as
 text and render as inline images for participants using this frontend.
 
-The picker also includes an **Emoji store**, a shared, searchable collection.
+## Custom meeting reactions
+
+Use the **Reactions** smile button in the bottom meeting toolbar. Its picker
+includes an **Emoji store**, a shared, searchable collection.
 Choose **Add emoji**, enter a name and upload a PNG, JPEG, WebP or GIF under 2 MB.
 Images are resized to fit 128×128 pixels. GIFs retain animation, timing and loop
 settings (up to 200 frames and 16 megapixels across all frames); other formats
 become static PNGs. Uploaded emojis become available to other participants within 30 seconds
-or when they focus the meeting window. Select one to insert its shortcode into
-your message. The library persists in MinIO across meetings and deployments.
+or when they focus the meeting window. Select one to broadcast it as a floating
+meeting reaction, with your name, to everyone in the call. Receivers can display
+new uploads immediately, even before their store refreshes. The library persists
+in MinIO across meetings and deployments. The upload/store controls are in the
+meeting reaction picker, not the chat emoji picker.
 
 Uploads require an active participant from the normal Meet join flow. A signed,
 HTTP-only upload cookie lasts 12 hours, and each upload checks that participant
