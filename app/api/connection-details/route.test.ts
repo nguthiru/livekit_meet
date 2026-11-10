@@ -31,4 +31,35 @@ it('allows meeting participants to update their own hand state without room admi
   expect(uploadClaims.metadata).toBe('emoji-upload');
   expect(uploadClaims.video?.roomJoin).not.toBe(true);
   expect(uploadClaims.video?.room).toBe('team-meeting');
+  const session = response!.cookies
+    .getAll()
+    .find((cookie) => cookie.name.startsWith('meet-control-'))!;
+  const sessionClaims = await new TokenVerifier('test-key', secret).verify(session.value);
+  expect(sessionClaims.metadata).toBe('meeting-control');
+  expect(sessionClaims.sub).toBe(claims.sub);
+  expect(sessionClaims.video?.room).toBe('team-meeting');
+  expect(sessionClaims.video?.roomJoin).not.toBe(true);
+  expect(sessionClaims.video?.roomAdmin).not.toBe(true);
+
+  // Names and the old editable postfix cannot be used to impersonate a host.
+  const guestResponse = await GET(
+    new NextRequest(
+      'http://localhost/api/connection-details?roomName=team-meeting&participantName=Anya',
+      { headers: { cookie: 'random-participant-postfix=test; meet-browser-session=forged' } },
+    ),
+  );
+  const guest = await guestResponse!.json();
+  const guestClaims = await new TokenVerifier('test-key', secret).verify(guest.participantToken);
+  expect(guestClaims.sub).not.toBe(claims.sub);
+
+  const browserSession = response!.cookies.get('meet-browser-session')!;
+  const rejoinResponse = await GET(
+    new NextRequest(
+      'http://localhost/api/connection-details?roomName=team-meeting&participantName=NewName',
+      { headers: { cookie: `meet-browser-session=${browserSession.value}` } },
+    ),
+  );
+  const rejoin = await rejoinResponse!.json();
+  const rejoinClaims = await new TokenVerifier('test-key', secret).verify(rejoin.participantToken);
+  expect(rejoinClaims.sub).toBe(claims.sub);
 });

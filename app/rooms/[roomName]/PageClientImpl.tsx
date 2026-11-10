@@ -6,6 +6,7 @@ import { BrandedPreJoin } from '@/lib/BrandedPreJoin';
 import { Brand } from '@/lib/Brand';
 import { Icon } from '@/lib/Icons';
 import { MeetingHeader } from '@/lib/MeetingHeader';
+import { MeetingHostProvider } from '@/lib/MeetingHosts';
 import { MeetingConference } from '@/lib/MeetingConference';
 import { decodePassphrase } from '@/lib/client-utils';
 import { DebugMode } from '@/lib/Debug';
@@ -324,18 +325,20 @@ function VideoConferenceComponent(props: {
   return (
     <div className="lk-room-container yoonka-room">
       <RoomContext.Provider value={room}>
-        <MeetingHeader />
-        <KeyboardShortcuts />
-        <div ref={conferenceRef} className="meeting-conference">
-          <MeetingConference
-            chatMessageFormatter={formatChatMessageLinks}
-            SettingsComponent={SHOW_SETTINGS_MENU ? SettingsMenu : undefined}
-          />
-          <TranscriptionButton conferenceRef={conferenceRef} />
-          <MeetingReactions conferenceRef={conferenceRef} />
-        </div>
-        <DebugMode />
-        <RecordingIndicator />
+        <MeetingHostProvider>
+          <MeetingHeader />
+          <KeyboardShortcuts />
+          <div ref={conferenceRef} className="meeting-conference">
+            <MeetingConference
+              chatMessageFormatter={formatChatMessageLinks}
+              SettingsComponent={SHOW_SETTINGS_MENU ? SettingsMenu : undefined}
+            />
+            <TranscriptionButton conferenceRef={conferenceRef} />
+            <MeetingReactions conferenceRef={conferenceRef} />
+          </div>
+          <DebugMode />
+          <RecordingIndicator />
+        </MeetingHostProvider>
       </RoomContext.Provider>
     </div>
   );

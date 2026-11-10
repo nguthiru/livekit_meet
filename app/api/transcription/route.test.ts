@@ -1,5 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { NextRequest } from 'next/server';
+const authorize = vi.hoisted(() => vi.fn());
+vi.mock('../../../lib/host-auth', () => ({ requireHost: authorize }));
 
 const dispatch = vi.hoisted(() => ({
   listDispatch: vi.fn(),
@@ -16,6 +18,7 @@ vi.mock('livekit-server-sdk', () => ({
 beforeEach(() => {
   vi.resetModules();
   vi.clearAllMocks();
+  authorize.mockResolvedValue(null);
   vi.stubEnv('LIVEKIT_API_KEY', 'test-key');
   vi.stubEnv('LIVEKIT_API_SECRET', 'test-secret');
   vi.stubEnv('LIVEKIT_URL', 'wss://example.test');
@@ -34,6 +37,15 @@ function request(method: string, roomName = 'meeting') {
 }
 
 describe('transcription controls API', () => {
+  it('blocks guest start and stop requests without dispatching an agent', async () => {
+    authorize.mockImplementation(async () => new Response('Only hosts', { status: 403 }));
+    const { POST, DELETE } = await import('./route');
+    expect((await POST(request('POST'))).status).toBe(403);
+    expect((await DELETE(request('DELETE'))).status).toBe(403);
+    expect(dispatch.listDispatch).not.toHaveBeenCalled();
+    expect(dispatch.createDispatch).not.toHaveBeenCalled();
+    expect(dispatch.deleteDispatch).not.toHaveBeenCalled();
+  });
   it('reports a configured transcription dispatch as active, even before the agent joins', async () => {
     dispatch.listDispatch.mockResolvedValue([{ id: '1', agentName: 'custom-transcriber' }]);
     const { GET } = await import('./route');

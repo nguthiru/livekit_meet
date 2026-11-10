@@ -1,5 +1,6 @@
 import { AgentDispatchClient } from 'livekit-server-sdk';
 import { NextRequest, NextResponse } from 'next/server';
+import { requireHost } from '../../../lib/host-auth';
 
 const LIVEKIT_API_KEY = process.env.LIVEKIT_API_KEY;
 const LIVEKIT_API_SECRET = process.env.LIVEKIT_API_SECRET;
@@ -49,6 +50,8 @@ export async function POST(request: NextRequest) {
     if (!roomName) {
       return NextResponse.json({ error: 'roomName is required' }, { status: 400 });
     }
+    const denied = await requireHost(request, roomName);
+    if (denied) return denied;
 
     const dispatchClient = new AgentDispatchClient(
       getHttpUrl(LIVEKIT_API_URL),
@@ -85,6 +88,8 @@ export async function DELETE(request: NextRequest) {
     if (!roomName) {
       return NextResponse.json({ error: 'roomName is required' }, { status: 400 });
     }
+    const denied = await requireHost(request, roomName);
+    if (denied) return denied;
 
     const dispatchClient = new AgentDispatchClient(
       getHttpUrl(LIVEKIT_API_URL),
