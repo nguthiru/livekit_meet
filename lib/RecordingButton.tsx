@@ -3,15 +3,16 @@
 import { useIsRecording, useRoomContext } from '@livekit/components-react';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
+import { Icon } from './Icons';
 
 export function RecordingButton() {
   const room = useRoomContext();
   const recording = useIsRecording();
-  const [pending, setPending] = useState(false);
+  const [pending, setPending] = useState<'starting' | 'stopping'>();
 
   async function toggleRecording() {
     if (pending) return;
-    setPending(true);
+    setPending(recording ? 'stopping' : 'starting');
     try {
       const response = await fetch('/api/record', {
         method: recording ? 'DELETE' : 'POST',
@@ -24,22 +25,33 @@ export function RecordingButton() {
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Unable to change recording');
     } finally {
-      setPending(false);
+      setPending(undefined);
     }
   }
 
-  const label = pending ? 'Please wait…' : recording ? 'Stop recording' : 'Record';
+  const label =
+    pending === 'starting'
+      ? 'Starting recording…'
+      : pending === 'stopping'
+        ? 'Stopping recording…'
+        : recording
+          ? 'Stop recording'
+          : 'Start recording';
   return (
     <button
-      className="lk-button"
+      className="lk-button meeting-icon-button"
       type="button"
-      disabled={pending || room.isE2EEEnabled}
+      disabled={!!pending || room.isE2EEEnabled}
+      aria-busy={!!pending}
       aria-pressed={recording}
       aria-label={label}
       title={room.isE2EEEnabled ? 'Recording is unavailable in encrypted rooms' : label}
       onClick={toggleRecording}
     >
-      {recording ? '■' : '●'} {label}
+      <Icon
+        name={pending ? 'loader' : recording ? 'stop' : 'record'}
+        className={pending ? 'icon-spin' : undefined}
+      />
     </button>
   );
 }
