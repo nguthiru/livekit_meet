@@ -36,6 +36,7 @@ export function MeetingHeader() {
         <small>{state === ConnectionState.Connected ? 'Together, in real time' : state}</small>
       </div>
       <div className="meeting-header-actions">
+        <div data-meeting-chat-slot />
         <span className="meeting-people" title="Participants">
           <Icon name="users" width={18} />
           {participants.filter((p) => !p.isAgent).length}

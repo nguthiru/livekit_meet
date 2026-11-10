@@ -1,9 +1,12 @@
 // Adapted from LiveKit VideoConference to expose an icon-only control bar.
 'use client';
 import * as React from 'react';
+import { createPortal } from 'react-dom';
 import { RoomEvent, Track } from 'livekit-client';
 import {
   CarouselLayout,
+  ChatToggle,
+  ChatIcon,
   ConnectionStateToast,
   FocusLayout,
   FocusLayoutContainer,
@@ -14,6 +17,7 @@ import {
   useCreateLayoutContext,
   usePinnedTracks,
   useTracks,
+  useLocalParticipantPermissions,
   isTrackReference,
   type TrackReferenceOrPlaceholder,
   type WidgetState,
@@ -37,6 +41,16 @@ export function MeetingConference({
   SettingsComponent,
   ...props
 }: VideoConferenceProps) {
+  const conferenceRef = React.useRef<HTMLDivElement>(null);
+  const [chatSlot, setChatSlot] = React.useState<HTMLElement | null>(null);
+  const permissions = useLocalParticipantPermissions();
+  React.useEffect(() => {
+    setChatSlot(
+      conferenceRef.current
+        ?.closest('.lk-room-container')
+        ?.querySelector<HTMLElement>('[data-meeting-chat-slot]') ?? null,
+    );
+  }, []);
   const [widgetState, setWidgetState] = React.useState<WidgetState>({
     showChat: false,
     unreadMessages: 0,
@@ -105,9 +119,21 @@ export function MeetingConference({
   }, [screenShareTracks, screenShareState, focusTrack, tracks, pinDispatch]);
 
   return (
-    <div className="lk-video-conference" {...props}>
+    <div className="lk-video-conference" {...props} ref={conferenceRef}>
       {typeof window !== 'undefined' && (
         <LayoutContextProvider value={layoutContext} onWidgetChange={widgetUpdate}>
+          {chatSlot &&
+            permissions?.canPublishData &&
+            createPortal(
+              <ChatToggle
+                className="icon-button meeting-header-chat"
+                aria-label={widgetState.showChat ? 'Close chat' : 'Open chat'}
+                title={widgetState.showChat ? 'Close chat' : 'Open chat'}
+              >
+                <ChatIcon />
+              </ChatToggle>,
+              chatSlot,
+            )}
           <div className="lk-video-conference-inner">
             <RaisedHands />
             {!focusTrack ? (
@@ -126,7 +152,7 @@ export function MeetingConference({
                 </FocusLayoutContainer>
               </div>
             )}
-            <MeetingControlBar controls={{ chat: true, settings: !!SettingsComponent }} />
+            <MeetingControlBar controls={{ chat: false, settings: !!SettingsComponent }} />
           </div>
           <MeetingChat
             style={{ display: widgetState.showChat ? 'grid' : 'none' }}

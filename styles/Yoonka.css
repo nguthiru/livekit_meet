@@ -433,6 +433,19 @@ a.icon-button:active {
 .meeting-header-actions .icon-button {
   background: transparent;
 }
+.meeting-header-actions .meeting-header-chat {
+  padding: 0;
+  flex-shrink: 0;
+}
+.meeting-header-chat svg {
+  width: 21px;
+  height: 21px;
+}
+.meeting-header-actions .meeting-header-chat:hover,
+.meeting-header-actions .meeting-header-chat[aria-pressed='true'] {
+  color: var(--color-accent);
+  background: #f1e5d5;
+}
 .meeting-conference {
   flex: 1;
   height: 0;
