@@ -2,6 +2,7 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 import { formatChatEmojis } from './chat-emojis';
+import { emojiFromObject } from './emoji-store';
 
 vi.mock('next/image', () => ({
   default: ({
@@ -12,6 +13,15 @@ vi.mock('next/image', () => ({
 }));
 
 describe('custom chat emojis', () => {
+  it('renders uploaded store emojis from their shortcodes for other participants', () => {
+    const emoji = emojiFromObject('7335dcab-472d-4aaf-baff-2bb62c2be87a--crew.png')!;
+    const html = renderToStaticMarkup(
+      <>{formatChatEmojis(`Hi ${emoji.value}`, undefined, [emoji])}</>,
+    );
+    expect(html).toContain('src="/api/emojis?image=');
+    expect(html).toContain('title="crew"');
+    expect(emojiFromObject('../bad.svg')).toBeUndefined();
+  });
   it('renders supported emoji shortcodes mixed with text and standard emoji', () => {
     const html = renderToStaticMarkup(
       <>{formatChatEmojis('Hi 😊 :yoonka: :yoonka_airship: :yoonka_compass:')}</>,

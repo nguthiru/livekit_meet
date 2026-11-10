@@ -57,3 +57,23 @@ Use the smile icon beside the message field to insert standard emojis or the
 custom Yoonka mark, airship and compass. Custom emojis also support the
 shortcodes `:yoonka:`, `:yoonka_airship:` and `:yoonka_compass:`. They travel as
 text and render as inline images for participants using this frontend.
+
+The picker also includes an **Emoji store**, a shared, searchable collection.
+Choose **Add emoji**, enter a name and upload a PNG, JPEG, WebP or GIF under 2 MB.
+Images are converted to static PNGs at up to 128×128 pixels; GIFs use their first
+frame. Uploaded emojis become available to other participants within 30 seconds
+or when they focus the meeting window. Select one to insert its shortcode into
+your message. The library persists in MinIO across meetings and deployments.
+
+Uploads require an active participant from the normal Meet join flow. A signed,
+HTTP-only upload cookie lasts 12 hours, and each upload checks that participant
+is still in the room. Custom-server joins can browse/use the store but must use
+the normal join flow to upload. There are no purchases or per-user ownership in
+this version; the collection is shared by everyone using this deployment.
+
+Use the existing `MINIO_ENDPOINT`, `MINIO_SECURE`, `MINIO_ACCESS_KEY`,
+`MINIO_SECRET_KEY` settings and optionally `MINIO_EMOJI_BUCKET` (default
+`livekit-emojis`). Create that private bucket and grant the app `s3:ListBucket`
+and `s3:GetBucketLocation` on the bucket plus `s3:GetObject` and `s3:PutObject`
+on its objects. The app serves image URLs through `/api/emojis`; bucket
+credentials stay server-side and the bucket does not need public access.

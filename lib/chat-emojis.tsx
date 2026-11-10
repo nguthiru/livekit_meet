@@ -1,6 +1,7 @@
 import React, { Fragment } from 'react';
 import Image from 'next/image';
 import type { MessageFormatter } from '@livekit/components-react';
+import type { StoreEmoji } from './emoji-store';
 
 export const CUSTOM_CHAT_EMOJIS = [
   { label: 'Yoonka', value: ':yoonka:', src: '/brand/favicon-32x32.png' },
@@ -27,22 +28,28 @@ export const CHAT_EMOJIS = [
   { label: 'Handshake', value: '🤝' },
 ];
 
-export function formatChatEmojis(message: string, formatter?: MessageFormatter) {
-  return message.split(/(:yoonka:|:yoonka_airship:|:yoonka_compass:)/g).map((part, index) => {
-    const emoji = CUSTOM_CHAT_EMOJIS.find((emoji) => emoji.value === part);
-    return emoji ? (
-      <Image
-        key={index}
-        className="meeting-chat-custom-emoji"
-        src={emoji.src}
-        alt={emoji.value}
-        title={emoji.label}
-        width={24}
-        height={24}
-        unoptimized
-      />
-    ) : (
-      <Fragment key={index}>{formatter ? formatter(part) : part}</Fragment>
-    );
-  });
+export function formatChatEmojis(
+  message: string,
+  formatter?: MessageFormatter,
+  custom: StoreEmoji[] = [],
+) {
+  return message
+    .split(/(:yoonka:|:yoonka_airship:|:yoonka_compass:|:custom_[0-9a-f-]{36}:)/g)
+    .map((part, index) => {
+      const emoji = [...CUSTOM_CHAT_EMOJIS, ...custom].find((emoji) => emoji.value === part);
+      return emoji ? (
+        <Image
+          key={index}
+          className="meeting-chat-custom-emoji"
+          src={emoji.src}
+          alt={emoji.value}
+          title={emoji.label}
+          width={24}
+          height={24}
+          unoptimized
+        />
+      ) : (
+        <Fragment key={index}>{formatter ? formatter(part) : part}</Fragment>
+      );
+    });
 }

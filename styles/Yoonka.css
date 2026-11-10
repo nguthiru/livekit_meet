@@ -903,3 +903,44 @@ a.icon-button:active {
   color: var(--color-danger);
   font-size: 11px;
 }
+.emoji-store {
+  border-top: 1px solid var(--color-rule);
+  padding-top: 12px;
+}
+.emoji-store-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 12px;
+}
+.emoji-store-heading .lk-button {
+  padding: 6px 8px;
+  font-size: 11px;
+}
+.emoji-store > .lk-form-control {
+  width: 100%;
+  margin-bottom: 12px;
+  min-width: 0;
+}
+.emoji-store-upload {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.emoji-store-upload label {
+  display: grid;
+  gap: 6px;
+  font-size: 12px;
+}
+.emoji-store-upload input {
+  min-width: 0;
+  max-width: 100%;
+}
+.emoji-store-upload p,
+.emoji-store-status {
+  color: var(--color-ink-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
