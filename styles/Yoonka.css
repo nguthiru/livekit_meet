@@ -615,6 +615,29 @@ a.icon-button:active {
   display: block;
   object-fit: contain;
 }
+.meeting-reactions {
+  max-height: calc(100dvh - 14rem);
+  overflow: hidden;
+  justify-content: flex-end;
+}
+.meeting-reaction {
+  flex-shrink: 0;
+}
+.meeting-reaction-image {
+  flex-direction: column;
+  width: clamp(128px, 24vw, 192px);
+  padding: 12px;
+  gap: 8px;
+  border-radius: 20px;
+}
+.meeting-reaction-image .meeting-reaction-emoji img {
+  width: clamp(88px, 16vw, 128px);
+  height: clamp(88px, 16vw, 128px);
+}
+.meeting-reaction-image .meeting-reaction-name {
+  max-width: 100%;
+  font-size: 12px;
+}
 .meeting-control .meeting-reaction-picker .lk-button:hover {
   background: #eeeee3;
 }

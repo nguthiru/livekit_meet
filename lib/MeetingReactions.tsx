@@ -178,14 +178,17 @@ export function MeetingReactions({
         )}
       <div className="meeting-reactions" role="status" aria-live="polite" aria-atomic="false">
         {reactions.map((reaction) => (
-          <div className="meeting-reaction" key={reaction.id}>
+          <div
+            className={`meeting-reaction${reaction.emoji.src ? ' meeting-reaction-image' : ''}`}
+            key={reaction.id}
+          >
             <span className="meeting-reaction-emoji">
               {reaction.emoji.src ? (
                 <Image
                   src={reaction.emoji.src}
                   alt={reaction.emoji.label}
-                  width={48}
-                  height={48}
+                  width={128}
+                  height={128}
                   unoptimized
                 />
               ) : (
