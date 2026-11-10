@@ -58,9 +58,17 @@ export function SettingsMenu(props: SettingsMenuProps) {
     setInitialRecStatus(isRecording);
     let response: Response;
     if (isRecording) {
-      response = await fetch(recordingEndpoint + `/stop?roomName=${room.name}`);
+      response = await fetch(recordingEndpoint, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roomName: room.name }),
+      });
     } else {
-      response = await fetch(recordingEndpoint + `/start?roomName=${room.name}`);
+      response = await fetch(recordingEndpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roomName: room.name }),
+      });
     }
     if (response.ok) {
     } else {
