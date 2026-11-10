@@ -2,6 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { NextRequest } from 'next/server';
 import { EgressClient } from 'livekit-server-sdk';
 import { GET, POST, DELETE } from './route';
+const authorize = vi.hoisted(() => vi.fn());
+vi.mock('../../../lib/host-auth', () => ({ requireHost: authorize }));
 
 const jobs = vi.hoisted(() => ({
   listEgress: vi.fn(),
@@ -16,6 +18,7 @@ vi.mock('livekit-server-sdk', async (original) => ({
 }));
 beforeEach(() => {
   vi.clearAllMocks();
+  authorize.mockResolvedValue(null);
   vi.stubEnv('LIVEKIT_API_URL', 'http://10.60.71.2:7880');
   vi.stubEnv('LIVEKIT_API_KEY', 'test-key');
   vi.stubEnv('LIVEKIT_API_SECRET', 'test-secret');
@@ -33,6 +36,14 @@ const request = (method: string, roomName = 'meeting') =>
     ...(method === 'GET' ? {} : { body: JSON.stringify({ roomName }) }),
   });
 describe('recording API', () => {
+  it('blocks guest start and stop requests before accessing Egress', async () => {
+    authorize.mockImplementation(async () => new Response('Only hosts', { status: 403 }));
+    expect((await POST(request('POST'))).status).toBe(403);
+    expect((await DELETE(request('DELETE'))).status).toBe(403);
+    expect(jobs.listEgress).not.toHaveBeenCalled();
+    expect(jobs.startRoomCompositeEgress).not.toHaveBeenCalled();
+    expect(jobs.stopEgress).not.toHaveBeenCalled();
+  });
   it('sends MP4 recording to private MinIO using path style and the internal LiveKit API', async () => {
     expect((await POST(request('POST'))).status).toBe(200);
     expect(EgressClient).toHaveBeenCalledWith('http://10.60.71.2:7880', 'test-key', 'test-secret');

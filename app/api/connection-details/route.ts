@@ -1,14 +1,14 @@
-import { randomString } from '@/lib/client-utils';
 import { getLiveKitURL } from '@/lib/getLiveKitURL';
 import { ConnectionDetails } from '@/lib/types';
-import { AccessToken, AccessTokenOptions, VideoGrant } from 'livekit-server-sdk';
+import { AccessToken, AccessTokenOptions, VideoGrant, TokenVerifier } from 'livekit-server-sdk';
+import { controlCookie } from '../../../lib/host-auth';
 import { NextRequest, NextResponse } from 'next/server';
 
 const API_KEY = process.env.LIVEKIT_API_KEY;
 const API_SECRET = process.env.LIVEKIT_API_SECRET;
 const LIVEKIT_URL = process.env.LIVEKIT_URL;
 
-const COOKIE_KEY = 'random-participant-postfix';
+const COOKIE_KEY = 'meet-browser-session';
 
 export async function GET(request: NextRequest) {
   try {
@@ -21,7 +21,16 @@ export async function GET(request: NextRequest) {
       throw new Error('LIVEKIT_URL is not defined');
     }
     const livekitServerUrl = region ? getLiveKitURL(LIVEKIT_URL, region) : LIVEKIT_URL;
-    let randomParticipantPostfix = request.cookies.get(COOKIE_KEY)?.value;
+    let identity: string | undefined;
+    try {
+      const browserToken = request.cookies.get(COOKIE_KEY)?.value;
+      if (browserToken) {
+        const claims = await new TokenVerifier(API_KEY!, API_SECRET!).verify(browserToken);
+        if (claims.metadata === 'meet-browser') identity = claims.sub;
+      }
+    } catch {
+      /* Invalid browser sessions get a fresh identity. */
+    }
     if (livekitServerUrl === undefined) {
       throw new Error('Invalid region');
     }
@@ -34,12 +43,10 @@ export async function GET(request: NextRequest) {
     }
 
     // Generate participant token
-    if (!randomParticipantPostfix) {
-      randomParticipantPostfix = randomString(4);
-    }
+    identity ??= crypto.randomUUID();
     const participantToken = await createParticipantToken(
       {
-        identity: `${participantName}__${randomParticipantPostfix}`,
+        identity,
         name: participantName,
         metadata,
       },
@@ -56,11 +63,10 @@ export async function GET(request: NextRequest) {
     const response = new NextResponse(JSON.stringify(data), {
       headers: {
         'Content-Type': 'application/json',
-        'Set-Cookie': `${COOKIE_KEY}=${randomParticipantPostfix}; Path=/; HttpOnly; SameSite=Strict; Secure; Expires=${getCookieExpirationTime()}`,
       },
     });
     const uploadToken = new AccessToken(API_KEY, API_SECRET, {
-      identity: `${participantName}__${randomParticipantPostfix}`,
+      identity,
       metadata: 'emoji-upload',
       ttl: '12h',
     });
@@ -71,6 +77,31 @@ export async function GET(request: NextRequest) {
       sameSite: 'strict',
       path: '/api/emojis',
       maxAge: 12 * 60 * 60,
+    });
+    const sessionOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production' || request.nextUrl.protocol === 'https:',
+      sameSite: 'strict' as const,
+      path: '/api',
+    };
+    const browserToken = new AccessToken(API_KEY, API_SECRET, {
+      identity,
+      metadata: 'meet-browser',
+      ttl: '30d',
+    });
+    response.cookies.set(COOKIE_KEY, await browserToken.toJwt(), {
+      ...sessionOptions,
+      maxAge: 30 * 86400,
+    });
+    const controlToken = new AccessToken(API_KEY, API_SECRET, {
+      identity,
+      metadata: 'meeting-control',
+      ttl: '12h',
+    });
+    controlToken.addGrant({ room: roomName });
+    response.cookies.set(controlCookie(roomName), await controlToken.toJwt(), {
+      ...sessionOptions,
+      maxAge: 12 * 3600,
     });
     return response;
   } catch (error) {
@@ -93,12 +124,4 @@ function createParticipantToken(userInfo: AccessTokenOptions, roomName: string) 
   };
   at.addGrant(grant);
   return at.toJwt();
-}
-
-function getCookieExpirationTime(): string {
-  var now = new Date();
-  var time = now.getTime();
-  var expireTime = time + 60 * 120 * 1000;
-  now.setTime(expireTime);
-  return now.toUTCString();
 }

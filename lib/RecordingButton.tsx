@@ -4,14 +4,16 @@ import { useIsRecording, useRoomContext } from '@livekit/components-react';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { Icon } from './Icons';
+import { useMeetingHosts } from './MeetingHosts';
 
 export function RecordingButton() {
   const room = useRoomContext();
+  const { isHost } = useMeetingHosts();
   const recording = useIsRecording();
   const [pending, setPending] = useState<'starting' | 'stopping'>();
 
   async function toggleRecording() {
-    if (pending) return;
+    if (pending || !isHost) return;
     setPending(recording ? 'stopping' : 'starting');
     try {
       const response = await fetch('/api/record', {
@@ -37,6 +39,7 @@ export function RecordingButton() {
         : recording
           ? 'Stop recording'
           : 'Start recording';
+  if (!isHost) return null;
   return (
     <button
       className="lk-button meeting-icon-button"

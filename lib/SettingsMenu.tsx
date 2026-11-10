@@ -11,6 +11,7 @@ import {
 import styles from '../styles/SettingsMenu.module.css';
 import { CameraSettings } from './CameraSettings';
 import { MicrophoneSettings } from './MicrophoneSettings';
+import { useMeetingHosts } from './MeetingHosts';
 /**
  * @alpha
  */
@@ -22,20 +23,24 @@ export interface SettingsMenuProps extends React.HTMLAttributes<HTMLDivElement> 
 export function SettingsMenu(props: SettingsMenuProps) {
   const layoutContext = useMaybeLayoutContext();
   const room = useRoomContext();
+  const { isHost } = useMeetingHosts();
   const recordingEndpoint = process.env.NEXT_PUBLIC_LK_RECORD_ENDPOINT;
 
   const settings = React.useMemo(() => {
     return {
       media: { camera: true, microphone: true, label: 'Media Devices', speaker: true },
-      recording: recordingEndpoint ? { label: 'Recording' } : undefined,
+      recording: recordingEndpoint && isHost ? { label: 'Recording' } : undefined,
     };
-  }, []);
+  }, [recordingEndpoint, isHost]);
 
   const tabs = React.useMemo(
     () => Object.keys(settings).filter((t) => t !== undefined) as Array<keyof typeof settings>,
     [settings],
   );
   const [activeTab, setActiveTab] = React.useState(tabs[0]);
+  React.useEffect(() => {
+    if (!isHost && activeTab === 'recording') setActiveTab('media');
+  }, [isHost, activeTab]);
 
   const isRecording = useIsRecording();
   const [initialRecStatus, setInitialRecStatus] = React.useState(isRecording);
@@ -48,6 +53,7 @@ export function SettingsMenu(props: SettingsMenuProps) {
   }, [isRecording, initialRecStatus]);
 
   const toggleRoomRecording = async () => {
+    if (!isHost) return;
     if (!recordingEndpoint) {
       throw TypeError('No recording endpoint specified');
     }
@@ -133,7 +139,7 @@ export function SettingsMenu(props: SettingsMenuProps) {
             )}
           </>
         )}
-        {activeTab === 'recording' && (
+        {isHost && activeTab === 'recording' && (
           <>
             <h3>Record Meeting</h3>
             <section>

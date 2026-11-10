@@ -51,6 +51,36 @@ The standard join flow grants the permission needed to update hand state. For
 custom-server connections, issue participant tokens with
 `video.canUpdateOwnMetadata: true` to enable the hand button.
 
+## Meeting hosts
+
+The first connected human participant becomes host. Roles are stored in the same
+private Redis used by LiveKit/Egress, scoped to the LiveKit room SID. For rooms
+already running when this feature is deployed, the earliest currently connected
+human is used when roles are initialized. Agents and recorders cannot become hosts.
+
+Only hosts see recording/transcription start and stop controls, including the
+recording settings tab. The APIs verify the signed room session, active participant
+membership and current Redis role on every mutation; hiding the controls is not
+the authorization boundary. Everyone still sees recording status notifications.
+
+Hosts use the shield icon in the meeting header (**Manage hosts**) to make another
+participant a host or remove host status. The last connected host cannot be
+removed. UI changes appear within two seconds; API revocation applies on the next
+request. Before the last host leaves, they should promote another participant.
+They can also rejoin from the same browser to resume control. Guests do not automatically inherit
+control when a host leaves.
+
+The app uses signed HTTP-only browser and per-room session cookies. Names, editable
+participant metadata and the old unsigned participant-postfix cookie do not grant
+host rights. Existing participants must rejoin after deploying this feature.
+Control sessions last 12 hours; rejoin to renew one. Custom-server joins do not
+grant access to this deployment's recording/transcription APIs.
+
+Meet needs TCP access to Redis, default `redis://10.60.71.2:6379`, authenticated
+with `LIVEKIT_API_SECRET` (matching this deployment's Redis configuration).
+Optionally override `LIVEKIT_REDIS_URL` and `LIVEKIT_REDIS_PASSWORD` in the shared
+host `.env`. Redis failure denies control access rather than promoting guests.
+
 ## Chat emojis
 
 Use the smile icon beside the message field to insert standard emojis or the

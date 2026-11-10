@@ -1,5 +1,6 @@
 import { EgressClient, EncodedFileOutput, EncodedFileType, S3Upload } from 'livekit-server-sdk';
 import { NextRequest, NextResponse } from 'next/server';
+import { requireHost } from '../../../lib/host-auth';
 
 function client() {
   const url = process.env.LIVEKIT_API_URL ?? process.env.LIVEKIT_URL;
@@ -35,6 +36,8 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const roomName = typeof body.roomName === 'string' ? body.roomName.trim() : '';
     if (!roomName) return NextResponse.json({ error: 'roomName is required' }, { status: 400 });
+    const denied = await requireHost(request, roomName);
+    if (denied) return denied;
     const egress = client();
     const jobs = await egress.listEgress({ roomName });
     if (jobs.some((job) => job.status < 3)) {
@@ -83,6 +86,8 @@ export async function DELETE(request: NextRequest) {
     const body = await request.json();
     const roomName = typeof body.roomName === 'string' ? body.roomName.trim() : '';
     if (!roomName) return NextResponse.json({ error: 'roomName is required' }, { status: 400 });
+    const denied = await requireHost(request, roomName);
+    if (denied) return denied;
     const egress = client();
     const jobs = await egress.listEgress({ roomName });
     await Promise.all(

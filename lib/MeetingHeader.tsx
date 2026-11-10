@@ -4,6 +4,7 @@ import { ConnectionState } from 'livekit-client';
 import { useState } from 'react';
 import { Brand } from './Brand';
 import { Icon } from './Icons';
+import { ManageHosts } from './MeetingHosts';
 
 export function MeetingHeader() {
   const room = useRoomContext();
@@ -36,6 +37,7 @@ export function MeetingHeader() {
         <small>{state === ConnectionState.Connected ? 'Together, in real time' : state}</small>
       </div>
       <div className="meeting-header-actions">
+        <ManageHosts />
         <div data-meeting-chat-slot />
         <span className="meeting-people" title="Participants">
           <Icon name="users" width={18} />

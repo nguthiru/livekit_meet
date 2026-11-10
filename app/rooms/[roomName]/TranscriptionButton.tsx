@@ -6,6 +6,7 @@ import { ConnectionState } from 'livekit-client';
 import { RefObject, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useConferenceControlBar } from '@/lib/useConferenceControlBar';
+import { useMeetingHosts } from '@/lib/MeetingHosts';
 
 export function TranscriptionButton({
   conferenceRef,
@@ -13,6 +14,7 @@ export function TranscriptionButton({
   conferenceRef: RefObject<HTMLDivElement | null>;
 }) {
   const room = useRoomContext();
+  const { isHost } = useMeetingHosts();
   const connection = useConnectionState(room);
   const controlBar = useConferenceControlBar(conferenceRef);
   const [active, setActive] = useState<boolean>();
@@ -22,7 +24,7 @@ export function TranscriptionButton({
   const busy = useRef(false);
 
   useEffect(() => {
-    if (connection !== ConnectionState.Connected) {
+    if (!isHost || connection !== ConnectionState.Connected) {
       setActive(undefined);
       return;
     }
@@ -55,10 +57,10 @@ export function TranscriptionButton({
       controller.abort();
       window.clearInterval(interval);
     };
-  }, [room, connection]);
+  }, [room, connection, isHost]);
 
   async function requestTranscription() {
-    if (busy.current || active === undefined) return;
+    if (!isHost || busy.current || active === undefined) return;
     busy.current = true;
     requestVersion.current += 1;
     setPending(active ? 'stopping' : 'starting');
@@ -95,7 +97,7 @@ export function TranscriptionButton({
             ? 'Stop transcription'
             : 'Start transcription';
 
-  if (!controlBar) return null;
+  if (!isHost || !controlBar) return null;
 
   return createPortal(
     <div className="meeting-control">
