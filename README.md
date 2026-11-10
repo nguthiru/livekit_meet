@@ -57,3 +57,30 @@ Use the smile icon beside the message field to insert standard emojis or the
 custom Yoonka mark, airship and compass. Custom emojis also support the
 shortcodes `:yoonka:`, `:yoonka_airship:` and `:yoonka_compass:`. They travel as
 text and render as inline images for participants using this frontend.
+
+## Custom meeting reactions
+
+Use the **Reactions** smile button in the bottom meeting toolbar. Its picker
+includes an **Emoji store**, a shared, searchable collection.
+Choose **Add emoji**, enter a name and upload a PNG, JPEG, WebP or GIF under 2 MB.
+Images are resized to fit 128×128 pixels. GIFs retain animation, timing and loop
+settings (up to 200 frames and 16 megapixels across all frames); other formats
+become static PNGs. Uploaded emojis become available to other participants within 30 seconds
+or when they focus the meeting window. Select one to broadcast it as a floating
+meeting reaction, with your name, to everyone in the call. Receivers can display
+new uploads immediately, even before their store refreshes. The library persists
+in MinIO across meetings and deployments. The upload/store controls are in the
+meeting reaction picker, not the chat emoji picker.
+
+Uploads require an active participant from the normal Meet join flow. A signed,
+HTTP-only upload cookie lasts 12 hours, and each upload checks that participant
+is still in the room. Custom-server joins can browse/use the store but must use
+the normal join flow to upload. There are no purchases or per-user ownership in
+this version; the collection is shared by everyone using this deployment.
+
+Use the existing `MINIO_ENDPOINT`, `MINIO_SECURE`, `MINIO_ACCESS_KEY`,
+`MINIO_SECRET_KEY` settings and optionally `MINIO_EMOJI_BUCKET` (default
+`livekit-emojis`). Create that private bucket and grant the app `s3:ListBucket`
+and `s3:GetBucketLocation` on the bucket plus `s3:GetObject` and `s3:PutObject`
+on its objects. The app serves image URLs through `/api/emojis`; bucket
+credentials stay server-side and the bucket does not need public access.

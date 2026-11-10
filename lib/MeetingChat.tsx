@@ -154,6 +154,11 @@ export function MeetingChat({
             className="meeting-chat-emoji-picker"
             role="dialog"
             aria-label="Choose an emoji"
+            onKeyDown={(event) => {
+              // Searching/naming emojis must not trigger meeting shortcuts.
+              if (event.key !== 'Escape') event.stopPropagation();
+            }}
+            onKeyUp={(event) => event.stopPropagation()}
           >
             <span>Yoonka</span>
             <div className="meeting-chat-emoji-grid">

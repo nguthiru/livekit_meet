@@ -53,12 +53,26 @@ export async function GET(request: NextRequest) {
       participantToken: participantToken,
       participantName: participantName,
     };
-    return new NextResponse(JSON.stringify(data), {
+    const response = new NextResponse(JSON.stringify(data), {
       headers: {
         'Content-Type': 'application/json',
         'Set-Cookie': `${COOKIE_KEY}=${randomParticipantPostfix}; Path=/; HttpOnly; SameSite=Strict; Secure; Expires=${getCookieExpirationTime()}`,
       },
     });
+    const uploadToken = new AccessToken(API_KEY, API_SECRET, {
+      identity: `${participantName}__${randomParticipantPostfix}`,
+      metadata: 'emoji-upload',
+      ttl: '12h',
+    });
+    uploadToken.addGrant({ room: roomName });
+    response.cookies.set('meet-emoji-upload', await uploadToken.toJwt(), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production' || request.nextUrl.protocol === 'https:',
+      sameSite: 'strict',
+      path: '/api/emojis',
+      maxAge: 12 * 60 * 60,
+    });
+    return response;
   } catch (error) {
     if (error instanceof Error) {
       return new NextResponse(error.message, { status: 500 });

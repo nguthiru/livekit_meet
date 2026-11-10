@@ -25,4 +25,10 @@ it('allows meeting participants to update their own hand state without room admi
   expect(claims.video?.canUpdateOwnMetadata).toBe(true);
   expect(claims.video?.room).toBe('team-meeting');
   expect(claims.video?.roomAdmin).not.toBe(true);
+  const upload = response!.cookies.get('meet-emoji-upload');
+  expect(upload).toBeDefined();
+  const uploadClaims = await new TokenVerifier('test-key', secret).verify(upload!.value);
+  expect(uploadClaims.metadata).toBe('emoji-upload');
+  expect(uploadClaims.video?.roomJoin).not.toBe(true);
+  expect(uploadClaims.video?.room).toBe('team-meeting');
 });
